@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="mainWindow" alignment="CENTER" prefHeight="500.0" prefWidth="480.0" spacing="20.0"
+      xmlns="http://javafx.com/javafx/17.0.2-ea" fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.MainController">
+
+    <MenuBar fx:id="menuBar" VBox.vgrow="NEVER">
+        <Menu mnemonicParsing="false" text="File">
+            <MenuItem fx:id="menuItemSettings" mnemonicParsing="false" onAction="#onActionMenuSettings" text="Settings"/>
+            <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" onAction="#onActionMenuQuit" text="Quit"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" onAction="#onActionMenuAbout" text="About"/>
+        </Menu>
+    </MenuBar>
+    <AnchorPane VBox.vgrow="ALWAYS" >
+
+        <VBox AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+
+            <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+                <Tab text="Existing build">
+                    <VBox>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                        </padding>
+                        <TableView fx:id="tableBuilds" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                            <placeholder>
+                                <Label text="No builds loaded"/>
+                            </placeholder>
+                        </TableView>
+                        <HBox spacing="5">
+                            <padding>
+                                <Insets top="5.0"/>
+                            </padding>
+                            <Button fx:id="btnStartDeploy" alignment="BASELINE_RIGHT" disable="true" onAction="#onStartDeploy" text="Deploy"/>
+                            <Button fx:id="btnShowBuildDetails" alignment="BASELINE_LEFT" disable="true" onAction="#onShowBuildDetails" text="Build details"/>
+                            <Pane HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnRefreshBuilds" alignment="BASELINE_LEFT" onAction="#onRefreshBuilds">
+                                <tooltip>
+                                    <Tooltip text="Refresh builds"/>
+                                </tooltip>
+                            </Button>
+                        </HBox>
+                    </VBox>
+
+                </Tab>
+                <Tab text="New build">
+                    <VBox>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                        </padding>
+                        <HBox alignment="CENTER_LEFT" spacing="5">
+                            <ComboBox fx:id="comboGitBranches" promptText="Select Git branch" HBox.hgrow="ALWAYS"/>
+                            <TextField fx:id="txtBuildCode" maxWidth="Infinity" minWidth="200" promptText="Build name" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnProposeBuildName" disable="true" onAction="#onSuggestNewBuildName">
+                                <tooltip>
+                                    <Tooltip text="Suggest build name"/>
+                                </tooltip>
+                            </Button>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="5">
+                            <padding>
+                                <Insets top="5.0"/>
+                            </padding>
+                            <Button fx:id="btnStartBuild" disable="true" onAction="#onStartBuild" text="Build"/>
+                            <CheckBox fx:id="checkboxDeployAfterBuild" disable="true" text="Deploy after build"/>
+                        </HBox>
+                    </VBox>
+
+                </Tab>
+
+                <Tab text="Deployments" fx:id="tabDeployments">
+                    <VBox>
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                        </padding>
+                        <TableView fx:id="tableDeployments" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                            <placeholder>
+                                <Label text="No deployments loaded"/>
+                            </placeholder>
+                        </TableView>
+                        <HBox spacing="5">
+                            <padding>
+                                <Insets top="5.0"/>
+                            </padding>
+                            <Button fx:id="btnShowDeploymentDetails" alignment="BASELINE_LEFT" disable="true" onAction="#onShowDeploymentDetails" text="Deployment details"/>
+                            <Pane HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnRefreshDeployments" alignment="BASELINE_LEFT" onAction="#onRefreshDeployments">
+                                <tooltip>
+                                    <Tooltip text="Refresh deployments"/>
+                                </tooltip>
+                            </Button>
+                        </HBox>
+                    </VBox>
+
+                </Tab>
+            </TabPane>
+
+            <ProgressBar fx:id="mainProgressBar" maxWidth="Infinity" progress="Infinity"/>
+            <TextArea fx:id="txtAreaConsole" maxHeight="60" editable="false"/>
+
+            <HBox spacing="5">
+                <padding>
+                    <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
+                </padding>
+                <ComboBox fx:id="comboEnvironments" disable="true" promptText="Environment" HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Target environment"/>
+                    </tooltip>
+                </ComboBox>
+                <ComboBox fx:id="comboDeploymentStrategies" promptText="Deployment strategy" HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Deployment strategy"/>
+                    </tooltip>
+                </ComboBox>
+                <ComboBox fx:id="comboDeploymentDatabaseUpdateMode" promptText="Database update mode" HBox.hgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="Database update mode"/>
+                    </tooltip>
+                </ComboBox>
+            </HBox>
+        </VBox>
+
+    </AnchorPane>
+</VBox>
