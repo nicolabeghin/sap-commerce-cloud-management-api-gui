@@ -10,6 +10,7 @@ name: Java CI with Gradle
 on:
   push:
     branches: [ "main" ]
+    tags: '*'
   pull_request:
     branches: [ "main" ]
 
@@ -36,6 +37,38 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew packageMyApp
 
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sap-commerce-cloud-api-gui-1.0.0-linux.tar.gz
+        path: build/sap-commerce-cloud-api-gui-1.0.0-linux.tar.gz
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sap-commerce-cloud-api-gui-1.0.0-mac.tar.gz
+        path: build/sap-commerce-cloud-api-gui-1.0.0-mac.tar.gz
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sap-commerce-cloud-api-gui-1.0.0-runnable.jar
+        path: build/sap-commerce-cloud-api-gui-1.0.0-runnable.jar
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sap-commerce-cloud-api-gui-1.0.0-windows.zip
+        path: build/sap-commerce-cloud-api-gui-1.0.0-windows.zip
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          build/sap-commerce-cloud-api-gui-1.0.0-runnable.jar
+          build/sap-commerce-cloud-api-gui-1.0.0-mac.tar.gz
+          build/sap-commerce-cloud-api-gui-1.0.0-linux.tar.gz
+          build/sap-commerce-cloud-api-gui-1.0.0-windows.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
   dependency-submission:
 
     runs-on: ubuntu-latest
