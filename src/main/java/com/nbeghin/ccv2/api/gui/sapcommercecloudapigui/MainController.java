@@ -228,6 +228,30 @@ public class MainController extends AbstractController implements Initializable 
         });
     }
 
+    private void checksForDeploymentSettings() throws Exception{
+        if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
+            throw new Exception("No environment selected");
+        }
+        if (comboDeploymentStrategies.getSelectionModel().getSelectedIndex() == -1) {
+            throw new Exception("No deployment strategy selected");
+        }
+        if (comboDeploymentDatabaseUpdateMode.getSelectionModel().getSelectedIndex() == -1) {
+            throw new Exception("No database update model selected");
+        }
+    }
+
+    private CreateDeploymentRequestDTO createDeploymentRequestDTO() throws Exception {
+        checksForDeploymentSettings();
+        EnvironmentDetailDTO environment = (EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem();
+        CreateDeploymentRequestDTO.StrategyEnum deploymentStrategy = (CreateDeploymentRequestDTO.StrategyEnum) comboDeploymentStrategies.getSelectionModel().getSelectedItem();
+        CreateDeploymentRequestDTO.DatabaseUpdateModeEnum updateMode = (CreateDeploymentRequestDTO.DatabaseUpdateModeEnum) comboDeploymentDatabaseUpdateMode.getSelectionModel().getSelectedItem();
+        CreateDeploymentRequestDTO createDeploymentRequestDTO = new CreateDeploymentRequestDTO();
+        createDeploymentRequestDTO.setStrategy(deploymentStrategy);
+        createDeploymentRequestDTO.setDatabaseUpdateMode(updateMode);
+        createDeploymentRequestDTO.setEnvironmentCode(environment.getCode());
+        return createDeploymentRequestDTO;
+    }
+
     private void showBuildAndDeployDialog(CreateBuildRequestDTO createBuildRequestDTO) {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("progress.fxml"));
@@ -236,16 +260,7 @@ public class MainController extends AbstractController implements Initializable 
             controller.setCreateBuildRequestDTO(createBuildRequestDTO);
             controller.setDeploy(checkboxDeployAfterBuild.isSelected());
             if (checkboxDeployAfterBuild.isSelected()) {
-                if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
-                    dialogError("No environment selected");
-                    return;
-                }
-                EnvironmentDetailDTO environment = (EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem();
-                CreateDeploymentRequestDTO createDeploymentRequestDTO = new CreateDeploymentRequestDTO();
-                createDeploymentRequestDTO.setStrategy(CreateDeploymentRequestDTO.StrategyEnum.ROLLING_UPDATE);
-                createDeploymentRequestDTO.setDatabaseUpdateMode(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.NONE);
-                createDeploymentRequestDTO.setEnvironmentCode(environment.getCode());
-                controller.setCreateDeploymentRequestDTO(createDeploymentRequestDTO);
+                controller.setCreateDeploymentRequestDTO(createDeploymentRequestDTO());
             }
             Stage dialogStage = new Stage();
             dialogStage.initModality(Modality.WINDOW_MODAL);
@@ -301,6 +316,13 @@ public class MainController extends AbstractController implements Initializable 
         if (comboGitBranches.getSelectionModel().getSelectedIndex() == -1) {
             dialogError("No Git branch selected");
             return;
+        }
+        if (checkboxDeployAfterBuild.isSelected()) {
+            try {
+                checksForDeploymentSettings();
+            } catch (Exception e) {
+                dialogError(e.getMessage());
+            }
         }
         CreateBuildRequestDTO createBuildRequestDTO = new CreateBuildRequestDTO();
         createBuildRequestDTO.setName(txtBuildCode.getText());
@@ -415,13 +437,9 @@ public class MainController extends AbstractController implements Initializable 
         txtBuildCode.setText(suggestedBuildName);
     }
 
-    public void onStartDeploy(ActionEvent actionEvent) {
+    public void onStartDeploy(ActionEvent actionEvent) throws Exception {
         if (tableBuilds.getSelectionModel().getSelectedIndex() == -1) {
             dialogError("No build selected");
-            return;
-        }
-        if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
-            dialogError("No environment selected");
             return;
         }
         BuildDetailDTO build = (BuildDetailDTO) tableBuilds.getSelectionModel().getSelectedItem();
@@ -429,12 +447,8 @@ public class MainController extends AbstractController implements Initializable 
             dialogError("Build cannot be deployed (status " + build.getStatus() + ")");
             return;
         }
-        EnvironmentDetailDTO environment = (EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem();
-        CreateDeploymentRequestDTO createDeploymentRequestDTO = new CreateDeploymentRequestDTO();
+        CreateDeploymentRequestDTO createDeploymentRequestDTO = createDeploymentRequestDTO();
         createDeploymentRequestDTO.setBuildCode(build.getCode());
-        createDeploymentRequestDTO.setStrategy(CreateDeploymentRequestDTO.StrategyEnum.ROLLING_UPDATE);
-        createDeploymentRequestDTO.setDatabaseUpdateMode(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.NONE);
-        createDeploymentRequestDTO.setEnvironmentCode(environment.getCode());
         showDeployDialog(createDeploymentRequestDTO);
     }
 
