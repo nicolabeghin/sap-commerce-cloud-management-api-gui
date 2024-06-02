@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController"
+            prefHeight="150.0" prefWidth="200.0">
+    <VBox spacing="5" alignment="CENTER" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+        <HBox VBox.vgrow="ALWAYS" alignment="BASELINE_LEFT" spacing="5">
+            <Text text="CCV2 API token      " />
+            <PasswordField fx:id="txtAccessToken" promptText="CCV2 API token"/>
+            <Button fx:id="btnInfoAccessToken" onAction="#onHelpAccessToken" />
+        </HBox>
+        <HBox VBox.vgrow="ALWAYS"  alignment="BASELINE_LEFT" spacing="5">
+            <Text text="CCV2 subscription " />
+            <TextField fx:id="txtSubscriptionCode" promptText="CCV2 subscription">
+                <tooltip>
+                    <Tooltip text="You can find the subscription code in the Cloud Portal URL. It appears after subscription/ in the URL." />
+                </tooltip>
+            </TextField>
+            <Button fx:id="btnInfoSubscriptionCode" onAction="#onHelpSubscriptionCode" />
+        </HBox>
+        <CheckBox fx:id="checkboxDebugEnabled" text="Enable network trace"/>
+        <Button fx:id="btnSaveSettings" onAction="#onSaveSettings" text="Save"/>
+    </VBox>
+</AnchorPane>

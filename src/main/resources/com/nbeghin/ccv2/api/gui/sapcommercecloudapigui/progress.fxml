@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import org.controlsfx.control.TaskProgressView?>
+<?import org.controlsfx.control.TaskProgressView?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="310.0"
+            prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.BuildController">
+    <TaskProgressView fx:id="taskProgressView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                      prefHeight="310.0" prefWidth="600.0"/>
+</AnchorPane>

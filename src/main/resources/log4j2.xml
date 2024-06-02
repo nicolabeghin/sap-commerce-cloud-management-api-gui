@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Extra logging related to initialization of Log4j.
+ Set to debug or trace if log4j initialization is failing. -->
+<Configuration status="warn">
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>%highlight{[%d{yyyy/MM/dd HH:mm:ss}] [%-5level] %msg%n%throwable}</Pattern>
+            </PatternLayout>
+        </Console>
+        <File name="ERRORS" fileName="sap-commerce-cloud-api-gui-errors.log">
+            <PatternLayout>
+                <Pattern>[%d{yyyy/MM/dd HH:mm:ss}] [%-5level] %msg%n%throwable</Pattern>
+            </PatternLayout>
+        </File>
+        <File name="FILE" fileName="sap-commerce-cloud-api-gui.log">
+            <PatternLayout>
+                <Pattern>[%d{yyyy/MM/dd HH:mm:ss}] [%-5level] %msg%n%throwable</Pattern>
+            </PatternLayout>
+        </File>
+
+    </Appenders>
+    <Loggers>
+        <Root level="info" additivity="false">
+            <AppenderRef ref="console" level="info "/>
+            <AppenderRef ref="FILE" level="info "/>
+            <AppenderRef ref="ERRORS" level="error "/>
+        </Root>
+    </Loggers>
+</Configuration>
