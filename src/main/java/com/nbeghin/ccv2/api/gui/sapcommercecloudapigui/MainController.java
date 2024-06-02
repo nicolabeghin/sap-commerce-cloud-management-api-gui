@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.commons.lang3.StringUtils;
+import org.controlsfx.control.textfield.TextFields;
 import org.controlsfx.dialog.ProgressDialog;
 import org.controlsfx.glyphfont.FontAwesome;
 
@@ -58,7 +59,7 @@ public class MainController extends AbstractController implements Initializable 
     @FXML
     private Button btnShowBuildDetails;
     @FXML
-    private ComboBox comboGitBranches;
+    private TextField txtGitBranches;
     @FXML
     private Button btnStartDeploy;
     @FXML
@@ -86,7 +87,7 @@ public class MainController extends AbstractController implements Initializable 
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        comboGitBranches.setItems(gitBranches);
+        TextFields.bindAutoCompletion(txtGitBranches, gitBranches);
         comboEnvironments.setItems(environmentsList);
         tableDeployments.setItems(deploymentsList);
         comboDeploymentDatabaseUpdateMode.setItems(deploymentDatabaseUpdateModes);
@@ -122,9 +123,11 @@ public class MainController extends AbstractController implements Initializable 
     }
 
     private void bindPreferences() {
-        comboGitBranches.valueProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
-            if (newValue != null && newValue != oldValue) {
-                App.savePreference(Constants.PREFS_GIT_BRANCH, (String) newValue);
+        txtBuildCode.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && !StringUtils.isEmpty(newValue)) {
+                if (comboEnvironments.getSelectionModel().getSelectedIndex() != -1) {
+                    App.savePreference(Constants.PREFS_GIT_BRANCH, (String) newValue);
+                }
             }
         });
         comboEnvironments.valueProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
@@ -167,7 +170,7 @@ public class MainController extends AbstractController implements Initializable 
 
         String gitBranch = App.getPreference(Constants.PREFS_GIT_BRANCH);
         if (gitBranch != null) {
-            comboGitBranches.getSelectionModel().select(gitBranch);
+            txtGitBranches.setText(gitBranch);
         }
         String deploymentStrategyCode = App.getPreference(Constants.PREFS_DEPLOYMENT_STRATEGY);
         if (deploymentStrategyCode != null) {
@@ -313,7 +316,7 @@ public class MainController extends AbstractController implements Initializable 
             dialogError("No build code provided");
             return;
         }
-        if (comboGitBranches.getSelectionModel().getSelectedIndex() == -1) {
+        if (StringUtils.isBlank(txtGitBranches.getText())) {
             dialogError("No Git branch selected");
             return;
         }
@@ -326,7 +329,7 @@ public class MainController extends AbstractController implements Initializable 
         }
         CreateBuildRequestDTO createBuildRequestDTO = new CreateBuildRequestDTO();
         createBuildRequestDTO.setName(txtBuildCode.getText());
-        createBuildRequestDTO.setBranch(comboGitBranches.getSelectionModel().getSelectedItem().toString());
+        createBuildRequestDTO.setBranch(txtGitBranches.getText());
         showBuildAndDeployDialog(createBuildRequestDTO);
     }
 
