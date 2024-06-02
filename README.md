@@ -3,8 +3,6 @@
 A simple JavaFX GUI for managing [SAP (Hybris) Commerce Cloud (TM)](https://www.sap.com/products/crm/commerce-cloud.html)
 
 <img width="832" alt="7" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/a80a909e-9b26-4c2c-bdbd-545428c1392c">
-<img width="480" alt="3" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/0f256603-384a-4c91-9106-3fb97f003deb">
-<img width="480" alt="1" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/fb1fb911-5ee1-4892-a20c-5f6943eeb6f9">
 
 ## What it is
 [SAP Commerce Cloud API](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?locale=en-US)
@@ -23,16 +21,22 @@ A [CLI](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/9116f1cfd16049
 provided but no GUI:
 this is where `sap-commerce-cloud-management-api-gui` comes into play.
 
-## Configuration
-<img width="338" alt="8_2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/3c8092d7-4871-49d4-966e-4a2f5d8c7669">
+### Existing builds
+<img width="480" alt="3" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/0f256603-384a-4c91-9106-3fb97f003deb">
 
-### How to retrieve Cloud Portal API token
+### New build
+<img width="480" alt="1" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/fb1fb911-5ee1-4892-a20c-5f6943eeb6f9">
 
-To authenticate against the Cloud Portal, generate an API token from the Cloud Portal,
+### Deployments
+<img width="480" alt="2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/c834d0fe-1094-4363-8bab-bf0c213a2e1f">
+
+## Credentials
+At first start you'll be prompted for
+* **Cloud Portal API token**: generate an API token from the Cloud Portal,
 see [Generating API Tokens](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/0fa6bcf4736c46f78c248512391eb467/b5d4d851cbd54469906a089bb8dd58d8.html?locale=en-US).
+* **Subscription code**: it can be found subscription code in the Cloud Portal URL, it appears after `subscription/` in the URL
 
-### How to retrieve Cloud Portal subscription
-You can find the subscription code in the Cloud Portal URL. It appears after `subscription/` in the URL.
+<img width="338" alt="8_2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/3c8092d7-4871-49d4-966e-4a2f5d8c7669">
 
 ## Technical
 * network calls have been generated through [Swagger codegen](https://swagger.io/docs/open-source-tools/swagger-codegen/) from [OpenAPI](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?locale=en-US)
