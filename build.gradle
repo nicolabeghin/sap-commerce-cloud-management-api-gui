@@ -15,7 +15,7 @@ plugins {
 }
 
 group 'com.nbeghin.ccv2.api.gui'
-version '1.0.4'
+version '1.0.5'
 
 repositories {
     mavenCentral()
