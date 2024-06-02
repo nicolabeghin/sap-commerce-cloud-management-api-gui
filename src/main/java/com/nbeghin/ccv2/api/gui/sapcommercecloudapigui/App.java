@@ -25,7 +25,7 @@ public class App {
             LOG.info("Storing preference " + key + "=" + value);
             prefs.putBoolean(key, value);
         } catch (Exception ex) {
-            System.out.println("Unable to save preference " + key);
+            LOG.error("Unable to save preference " + key);
         }
     }
 
@@ -38,7 +38,7 @@ public class App {
             LOG.info("Storing preference " + key + "=" + value);
             prefs.put(key, value);
         } catch (Exception ex) {
-            System.out.println("Unable to save preference " + key);
+            LOG.error("Unable to save preference " + key);
         }
     }
 
