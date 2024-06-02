@@ -24,6 +24,13 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         return this.waitCompletion(deploymentCode, 4200, timeout);
     }
 
+    /**
+     * @param deploymentCode
+     * @param pollInterval
+     * @param timeout
+     * @return true for fail, false for success
+     * @throws Exception
+     */
     public boolean waitCompletion(String deploymentCode, int pollInterval, String timeout) throws Exception {
         this.waitForStart(deploymentCode, pollInterval);
         DeploymentProgressDTO previousProgress = null;

@@ -126,9 +126,9 @@ public class BuildController extends AbstractController implements Initializable
         task.setOnSucceeded(event -> {
             Boolean aBoolean = task.getValue();
             if (aBoolean) {
-                notificationInfo("Deployment completed", "Deployment completed successfully");
-            } else {
                 notificationError("Deployment", "Deployment failed");
+            } else {
+                notificationInfo("Deployment completed", "Deployment completed successfully");
             }
         });
         task.setOnFailed(event -> {
