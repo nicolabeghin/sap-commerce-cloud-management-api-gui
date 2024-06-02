@@ -2,6 +2,12 @@ package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks;
 
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.Constants;
 import com.sap.cx.commercecloud.management.openapi.model.DeploymentProgressDTO;
+import com.sap.cx.commercecloud.management.openapi.model.DeploymentProgressStageDTO;
+import com.sap.cx.commercecloud.management.openapi.model.DeploymentProgressStepDTO;
+import org.threeten.bp.OffsetDateTime;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
@@ -41,12 +47,11 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         while (!failed[0]) {
             DeploymentProgressDTO currentProgress = getDeploymentApi().getDeploymentProgress(Constants.SUBSCRIPTION_CODE, deploymentCode).execute().body();
             DeploymentProgressDTO tmpProgress = previousProgress == null ? new DeploymentProgressDTO() : previousProgress;
-//            currentProgress.getStages().stream().skip(this.countPrintedStages(tmpProgress)).forEach((stage) -> {
-//                this.printStage(stage, tmpProgress, failed);
-//            });
+            currentProgress.getStages().stream().skip(this.countPrintedStages(tmpProgress)).forEach((stage) -> {
+                this.printStage(stage, tmpProgress, failed);
+            });
             int currentPercentage = currentProgress.getPercentage();
             if (currentPercentage != 0 && (previousProgress == null || previousProgress.getPercentage() < currentPercentage)) {
-                updateMessage("Progress: " + currentPercentage + "%");
                 updateProgress(currentPercentage, 100);
             }
 
@@ -124,5 +129,50 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         } else {
             return false;
         }
+    }
+
+
+    private void printStage(DeploymentProgressStageDTO stage, DeploymentProgressDTO tmpProgress, boolean... failed) {
+        List<DeploymentProgressStageDTO> stageList = tmpProgress.getStages() == null ? new ArrayList() : tmpProgress.getStages();
+        OffsetDateTime endTime = stage.getEndTimestamp();
+        if ("DONE".equals(stage.getStatus()) && endTime != null) {
+            updateMessage("Stage '" + stage.getType() + "' finished at " + endTime);
+            stage.getSteps().forEach((stepDTO) -> {
+                this.printStep(stepDTO, failed);
+            });
+            ((List) stageList).add(stage);
+        }
+
+        if ("FAIL".equals(stage.getStatus())) {
+            updateMessage("Stage '" + stage.getType() + "' has failed");
+            stage.getSteps().forEach((stepDTO) -> {
+                this.printStep(stepDTO, failed);
+            });
+            ((List) stageList).add(stage);
+            if (!failed[0]) {
+                failed[0] = true;
+            }
+        }
+
+        tmpProgress.setStages((List) stageList);
+    }
+
+    private void printStep(DeploymentProgressStepDTO stepDTO, boolean... failed) {
+        String stepStatus = stepDTO.getStatus();
+        OffsetDateTime endTime = stepDTO.getEndTimestamp();
+        if ("FAIL".equals(stepDTO.getStatus())) {
+            updateMessage("Step '" + stepDTO.getName() + "' has failed.");
+            if (!failed[0]) {
+                failed[0] = true;
+            }
+        }
+
+        if ("DONE".equals(stepStatus) && endTime != null) {
+            updateMessage("Step '" + stepDTO.getName() + "' finished at " + endTime);
+        }
+    }
+
+    private long countPrintedStages(DeploymentProgressDTO previousProgress) {
+        return previousProgress.getStages() == null ? 0L : (long) previousProgress.getStages().size();
     }
 }
