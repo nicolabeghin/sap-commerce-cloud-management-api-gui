@@ -50,7 +50,20 @@ Download the precompiled releases for your platform at https://github.com/nicola
     ./gradlew run  
 
 ## Technical
-* network calls have been generated through [Swagger codegen](https://swagger.io/docs/open-source-tools/swagger-codegen/) from [OpenAPI](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?locale=en-US)
-specifications 
 * networking based on [Retrofit](https://square.github.io/retrofit/) + [OkHttp3](https://square.github.io/okhttp/)
 * it's possible to enable network tracing
+* network calls have been generated through [Swagger codegen](https://swagger.io/docs/open-source-tools/swagger-codegen/) from [OpenAPI](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?locale=en-US)
+  specifications
+
+
+    java -jar swagger-codegen-cli-3.0.57.jar generate \
+        -i commerce-cloud-management-api.yaml \
+        -l java \
+        --api-package com.sap.cx.commercecloud.management.openapi.api \
+        --model-package com.sap.cx.commercecloud.management.openapi.model \
+        --invoker-package com.sap.cx.commercecloud.management.openapi \
+        --group-id com.nbeghin.ccv2.api.gui \
+        --artifact-id sap-commerce-cloud-api-gui \
+        --artifact-version 0.0.1-SNAPSHOT \
+        --library retrofit2 \
+        -o retrofit2
