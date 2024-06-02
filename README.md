@@ -1,6 +1,6 @@
 # sap-commerce-cloud-management-api-gui
 
-A simple JavaFX GUI for managing [SAP (Hybris) Commerce Cloud (TM)](https://www.sap.com/products/crm/commerce-cloud.html)
+A simple cross-platform JavaFX GUI for managing [SAP (Hybris) Commerce Cloud (TM)](https://www.sap.com/products/crm/commerce-cloud.html)
 
 <img width="832" alt="7" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/a80a909e-9b26-4c2c-bdbd-545428c1392c">
 
@@ -37,6 +37,17 @@ see [Generating API Tokens](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_
 * **Subscription code**: it can be found subscription code in the Cloud Portal URL, it appears after `subscription/` in the URL
 
 <img width="338" alt="8_2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/3c8092d7-4871-49d4-966e-4a2f5d8c7669">
+
+## Requirements
+* Java 8 or higher
+
+## How to run
+Download the precompiled releases for your platform at https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/releases
+
+## How to run from source code
+    
+    git@github.com:nicolabeghin/sap-commerce-cloud-api-gui.git
+    ./gradlew run  
 
 ## Technical
 * network calls have been generated through [Swagger codegen](https://swagger.io/docs/open-source-tools/swagger-codegen/) from [OpenAPI](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?locale=en-US)
