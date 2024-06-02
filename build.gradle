@@ -23,6 +23,7 @@ repositories {
 
 ext {
     junitVersion = '5.10.0'
+    url = 'https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/'
 }
 
 sourceCompatibility = '8'
@@ -36,32 +37,37 @@ application {
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
 }
 
-
-task packageMyAppForLinux(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
+task packageAppForLinux(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
     platform = "linux"
     createTarball = true
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
     bundleJre = false
     generateInstaller = false
     administratorRequired = false
+    jreMinVersion = 8
+    url = "$url"
 }
-task packageMyAppForMac(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
+task packageAppForMac(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
     platform = "mac"
     createTarball = true
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
     bundleJre = false
     generateInstaller = false
     administratorRequired = false
+    jreMinVersion = 8
+    url = "$url"
 }
-task packageMyAppForWindows(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
+task packageAppForWindows(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
     platform = "windows"
     createZipball = true
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
     bundleJre = false
     generateInstaller = false
     administratorRequired = false
+    jreMinVersion = 8
+    url = "$url"
 }
-task packageMyApp(dependsOn: [ 'packageMyAppForLinux', 'packageMyAppForMac', 'packageMyAppForWindows' ])
+task packageApp(dependsOn: [ 'packageAppForLinux', 'packageAppForMac', 'packageAppForWindows' ])
 
 javafx {
     version = '22.0.1'
