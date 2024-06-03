@@ -99,10 +99,6 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        with:
-          files: |
-            *.tar.gz
-            *.zip
       - run: ls -lhrt ${{ github.workspace }}
       - run: ls -lhrt ${{ github.workspace }}/windows/
       - run: ls -lhrt
