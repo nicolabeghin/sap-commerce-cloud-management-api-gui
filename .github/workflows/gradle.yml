@@ -112,9 +112,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-windows.zip/sap-commerce-cloud-management-api-gui-windows.zip
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-mac.tar.gz/sap-commerce-cloud-management-api-gui-mac.tar.gz
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-linux.tar.gz/sap-commerce-cloud-management-api-gui-linux.tar.gz
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-windows.zip/*.zip
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-mac.tar.gz/*.tar.gz
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-linux.tar.gz/*.tar.gz
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
