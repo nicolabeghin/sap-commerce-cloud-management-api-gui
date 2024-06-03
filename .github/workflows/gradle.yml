@@ -36,7 +36,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: sap-commerce-cloud-management-api-gui-linux.tar.gz
+        name: linux
         if-no-files-found: error
         path: build/*.tar.gz
 
@@ -61,7 +61,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: sap-commerce-cloud-management-api-gui-mac.tar.gz
+        name: mac
         if-no-files-found: error
         path: build/*.tar.gz
 
@@ -86,7 +86,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: sap-commerce-cloud-management-api-gui-windows.zip
+        name: windows
         if-no-files-found: error
         path: build/*.zip
 
@@ -100,21 +100,19 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ${{ github.workspace }}/publish
           files: |
             *.tar.gz
             *.zip
       - run: ls -lhrt ${{ github.workspace }}
-      - run: ls -lhrt ${{ github.workspace }}/publish
-      - run: ls -lhrt ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-windows.zip/
+      - run: ls -lhrt ${{ github.workspace }}/windows/
       - run: ls -lhrt
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-windows.zip/*.zip
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-mac.tar.gz/*.tar.gz
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-linux.tar.gz/*.tar.gz
+            windows/*.zip
+            mac/*.tar.gz
+            linux/*.tar.gz
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
