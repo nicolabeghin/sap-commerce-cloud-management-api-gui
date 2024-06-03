@@ -108,13 +108,13 @@ jobs:
       - run: ls -lhrt ${{ github.workspace }}/publish
       - run: ls -lhrt
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v1
         with:
           fail_on_unmatched_files: true
           files: |
-            sap-commerce-cloud-management-api-gui-windows.zip
-            sap-commerce-cloud-management-api-gui-mac.zip
-            sap-commerce-cloud-management-api-gui-linux.tar.gz
+            ${{ github.workspace }}/sap-commerce-cloud-management-api-gui-windows.zip
+            ${{ github.workspace }}/sap-commerce-cloud-management-api-gui-mac.zip
+            ${{ github.workspace }}/sap-commerce-cloud-management-api-gui-linux.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
