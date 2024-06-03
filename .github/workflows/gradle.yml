@@ -104,6 +104,8 @@ jobs:
           files: |
             *.tar.gz
             *.zip
+      - run: ls -lhrt ${{ github.workspace }}
+      - run: ls -lhrt
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
