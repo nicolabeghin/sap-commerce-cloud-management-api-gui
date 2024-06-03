@@ -44,7 +44,7 @@ task packageAppForLinux(type: io.github.fvarrui.javapackager.gradle.PackageTask,
     bundleJre = false
     generateInstaller = false
     administratorRequired = false
-    jreMinVersion = 8
+    jreMinVersion = "1.8"
     url = "$url"
 }
 task packageAppForMac(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
@@ -54,7 +54,7 @@ task packageAppForMac(type: io.github.fvarrui.javapackager.gradle.PackageTask, d
     bundleJre = false
     generateInstaller = false
     administratorRequired = false
-    jreMinVersion = 8
+    jreMinVersion = "1.8"
     url = "$url"
 }
 task packageAppForWindows(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
@@ -64,7 +64,7 @@ task packageAppForWindows(type: io.github.fvarrui.javapackager.gradle.PackageTas
     bundleJre = false
     generateInstaller = false
     administratorRequired = false
-    jreMinVersion = 8
+    jreMinVersion = "1.8"
     url = "$url"
 }
 task packageApp(dependsOn: [ 'packageAppForLinux', 'packageAppForMac', 'packageAppForWindows' ])
