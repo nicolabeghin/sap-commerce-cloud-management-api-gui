@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.1.0'
-    id 'io.github.fvarrui.javapackager.plugin' version '1.7.5'
+    id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.22'
 }
 
 group 'com.nbeghin.ccv2.api.gui'
@@ -30,38 +30,14 @@ application {
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
 }
 
-task packageAppForLinux(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
-    platform = "linux"
-    createTarball = true
-    mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
-    bundleJre = false
-    generateInstaller = false
-    administratorRequired = false
-    jreMinVersion = "1.8"
-    url = "$url"
+run {
+    // https://github.com/controlsfx/controlsfx/wiki/Using-ControlsFX-with-JDK-9-and-above
+    jvmArgs = ['--add-exports=javafx.base/com.sun.javafx.event=org.controlsfx.controls']
 }
-task packageAppForMac(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
-    platform = "mac"
-    createTarball = true
-    mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
-    bundleJre = false
-    generateInstaller = false
-    administratorRequired = false
-    jreMinVersion = "1.8"
-    url = "$url"
+gluonfx {
+    graalvmHome = '/Library/Java/JavaVirtualMachines/graalvm-jdk-17.0.11+7.1/Contents/Home'
+    mainClassName = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
 }
-task packageAppForWindows(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
-    platform = "windows"
-    createZipball = true
-    mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
-    bundleJre = false
-    generateInstaller = false
-    administratorRequired = false
-    jreMinVersion = "1.8"
-    url = "$url"
-}
-task packageApp(dependsOn: [ 'packageAppForLinux', 'packageAppForMac', 'packageAppForWindows' ])
-
 javafx {
     version = '22.0.1'
     modules = ['javafx.controls', 'javafx.fxml']
