@@ -110,10 +110,10 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          fail_on_unmatched_files: true
           files: |
-            ${{ github.workspace }}/publish/*.zip
-            ${{ github.workspace }}/publish/*.tar.gz
+            *.tar.gz
+            *.zip
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
