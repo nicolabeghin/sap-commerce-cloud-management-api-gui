@@ -97,7 +97,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: publish
+          path: ${{ github.workspace }}/publish
           files: |
             *.tar.gz
             *.zip
@@ -105,8 +105,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            publish/*.tar.gz
-            publish/*.zip
+            ${{ github.workspace }}/publish/*.tar.gz
+            ${{ github.workspace }}/publish/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
