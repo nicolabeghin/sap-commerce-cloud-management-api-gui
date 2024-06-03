@@ -61,9 +61,9 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: sap-commerce-cloud-management-api-gui-mac.zip
+        name: sap-commerce-cloud-management-api-gui-mac.tar.gz
         if-no-files-found: error
-        path: build/*.zip
+        path: build/*.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -113,7 +113,7 @@ jobs:
         with:
           files: |
             ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-windows.zip/sap-commerce-cloud-management-api-gui-windows.zip
-            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-mac.zip/sap-commerce-cloud-management-api-gui-mac.zip
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-mac.tar.gz/sap-commerce-cloud-management-api-gui-mac.tar.gz
             ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-linux.tar.gz/sap-commerce-cloud-management-api-gui-linux.tar.gz
           fail_on_unmatched_files: true
         env:
