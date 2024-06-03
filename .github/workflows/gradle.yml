@@ -18,7 +18,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
   build-osx:
     runs-on: macos-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -99,9 +99,6 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-      - run: ls -lhrt ${{ github.workspace }}
-      - run: ls -lhrt ${{ github.workspace }}/windows/
-      - run: ls -lhrt
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
