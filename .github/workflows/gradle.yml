@@ -15,7 +15,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -95,7 +95,7 @@ jobs:
         path: build/*.zip
 
   release:
-    needs: [build, build-osx, build-windows]
+    needs: [build-linux, build-osx, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
