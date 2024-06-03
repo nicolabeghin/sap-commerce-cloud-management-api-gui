@@ -35,7 +35,7 @@ run {
     jvmArgs = ['--add-exports=javafx.base/com.sun.javafx.event=org.controlsfx.controls']
 }
 gluonfx {
-    graalvmHome = '/Library/Java/JavaVirtualMachines/graalvm-jdk-17.0.11+7.1/Contents/Home'
+//    graalvmHome = '/Library/Java/JavaVirtualMachines/graalvm-jdk-17.0.11+7.1/Contents/Home'
     mainClassName = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
 }
 javafx {
