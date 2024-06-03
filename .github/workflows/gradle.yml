@@ -105,6 +105,7 @@ jobs:
             *.tar.gz
             *.zip
       - run: ls -lhrt ${{ github.workspace }}
+      - run: ls -lhrt ${{ github.workspace }}/publish
       - run: ls -lhrt
       - name: Release
         uses: softprops/action-gh-release@v2
