@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main", "cicd-cross" ]
+    branches: '*'
     tags: '*'
   pull_request:
     branches: [ "main" ]
@@ -35,10 +35,6 @@ jobs:
 
     - name: Build with Gradle Wrapper
       run: ./gradlew packageAppForLinux
-
-    - uses: actions/upload-artifact@v4
-      with:
-        path: build/*.tar.gz
 
     - uses: actions/upload-artifact@v4
       with:
@@ -106,6 +102,7 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
+        path: publish
         with:
           files: |
             *.tar.gz
@@ -114,8 +111,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            *.tar.gz
-            *.zip
+            publish/*.tar.gz
+            publish/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
