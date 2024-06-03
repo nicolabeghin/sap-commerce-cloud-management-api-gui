@@ -112,9 +112,9 @@ jobs:
         with:
           fail_on_unmatched_files: true
           files: |
-            ${{ github.workspace }}/sap-commerce-cloud-management-api-gui-windows.zip
-            ${{ github.workspace }}/sap-commerce-cloud-management-api-gui-mac.zip
-            ${{ github.workspace }}/sap-commerce-cloud-management-api-gui-linux.tar.gz
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-windows.zip
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-mac.zip
+            ${{ github.workspace }}/publish/sap-commerce-cloud-management-api-gui-linux.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
