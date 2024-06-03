@@ -52,7 +52,7 @@
                             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
                         </padding>
                         <HBox alignment="CENTER_LEFT" spacing="5">
-                            <TextField fx:id="txtGitBranches" promptText="Select Git branch" HBox.hgrow="ALWAYS"/>
+                            <TextField fx:id="txtGitBranches" promptText="Git branch or tag" HBox.hgrow="ALWAYS"/>
                             <TextField fx:id="txtBuildCode" maxWidth="Infinity" minWidth="200" promptText="Build name" HBox.hgrow="ALWAYS"/>
                             <Button fx:id="btnProposeBuildName" disable="true" onAction="#onSuggestNewBuildName">
                                 <tooltip>
