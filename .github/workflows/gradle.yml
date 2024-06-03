@@ -102,8 +102,8 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        path: publish
         with:
+          path: publish
           files: |
             *.tar.gz
             *.zip
