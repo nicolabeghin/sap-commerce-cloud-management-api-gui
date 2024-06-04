@@ -42,7 +42,10 @@ gluonfx {
     enableSwRendering = true
     reflectionList = [
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.JavaFXApplication',
-            'javafx.fxml.FXMLLoader'
+            'javafx.fxml.FXMLLoader',
+            'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.MainController',
+            'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.BuildController',
+            'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController'
     ]
 }
 javafx {
