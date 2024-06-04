@@ -51,15 +51,6 @@ jobs:
         if-no-files-found: error
         path: build/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
 
-    - name: Gluon package
-      run: ./gradlew nativePackage --stacktrace
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: linux-build
-        if-no-files-found: error
-        path: build/*
-
   build-osx:
     runs-on: macos-latest
     permissions:
