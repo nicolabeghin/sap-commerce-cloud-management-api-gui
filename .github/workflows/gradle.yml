@@ -53,9 +53,9 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: linux-target
+        name: linux-build
         if-no-files-found: error
-        path: target/gluonfx/*
+        path: build/*
 
   build-osx:
     runs-on: macos-latest
@@ -88,6 +88,6 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: mac-target
+        name: mac-build
         if-no-files-found: error
-        path: target/gluonfx/*
+        path: build/*
