@@ -3,7 +3,6 @@ module sap.commerce.cloud.management.api.gui.main {
     requires okhttp3;
     requires transitive org.apache.oltu.oauth2.client;
     requires retrofit2;
-    requires threetenbp;
     requires retrofit2.converter.gson;
     requires retrofit2.converter.scalars;
     requires gson.fire;
@@ -16,6 +15,7 @@ module sap.commerce.cloud.management.api.gui.main {
     requires java.datatransfer;
     requires org.apache.logging.log4j;
     requires java.prefs;
+    requires org.apache.commons.lang3;
     exports com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
     opens com.nbeghin.ccv2.api.gui.sapcommercecloudapigui to javafx.fxml;
 
