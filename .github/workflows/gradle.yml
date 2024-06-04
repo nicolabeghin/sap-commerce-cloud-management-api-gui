@@ -49,4 +49,33 @@ jobs:
       with:
         name: linux
         if-no-files-found: error
-        path: build/*
+        path: target/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
+
+  build-osx:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Gluon's GraalVM
+      uses: gluonhq/setup-graalvm@master
+      with:
+        jdk: 'java17'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew clean build
+
+    - name: Gluon nativeBuild
+      run: ./gradlew nativeBuild
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: mac
+        if-no-files-found: error
+        path: target/gluonfx/*
