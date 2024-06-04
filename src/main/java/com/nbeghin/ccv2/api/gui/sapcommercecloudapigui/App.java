@@ -1,8 +1,8 @@
 package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
 
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.Constants;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.prefs.Preferences;
 
@@ -10,7 +10,7 @@ import java.util.prefs.Preferences;
  * @link <a href="https://stackoverflow.com/a/58498686/2378095">...</a>
  */
 public class App {
-    public static Logger LOG = LogManager.getLogger("sap-commerce-cloud-api-gui");
+    public static Logger LOG = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
         JavaFXApplication.main(args);

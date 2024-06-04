@@ -13,9 +13,9 @@ module sap.commerce.cloud.management.api.gui.main {
     requires java.desktop;
     requires org.controlsfx.controls;
     requires java.datatransfer;
-    requires org.apache.logging.log4j;
     requires java.prefs;
     requires org.apache.commons.lang3;
+    requires org.slf4j;
     exports com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
     opens com.nbeghin.ccv2.api.gui.sapcommercecloudapigui to javafx.fxml;
 
