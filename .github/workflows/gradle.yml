@@ -42,8 +42,5 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew clean build
 
-    - name: Gluon nativeRunAgent
-      run: ./gradlew nativeRunAgent
-
     - name: Gluon nativeBuild
       run: ./gradlew nativeBuild
