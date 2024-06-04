@@ -40,6 +40,7 @@ run {
 gluonfx {
     mainClassName = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
     enableSwRendering = true
+    releaseConfiguration.skipSigning = true
     reflectionList = [
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.JavaFXApplication',
             'javafx.fxml.FXMLLoader',
@@ -47,9 +48,6 @@ gluonfx {
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.BuildController',
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController'
     ]
-    release {
-        skipSigning = true
-    }
 }
 javafx {
     version = '22.0.1'
