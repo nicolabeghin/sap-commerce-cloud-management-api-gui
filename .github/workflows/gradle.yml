@@ -49,7 +49,7 @@ jobs:
       with:
         name: linux
         if-no-files-found: error
-        path: target/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
+        path: build/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
 
   build-osx:
     runs-on: macos-latest
@@ -78,4 +78,4 @@ jobs:
       with:
         name: mac
         if-no-files-found: error
-        path: target/gluonfx/*
+        path: build/gluonfx/*
