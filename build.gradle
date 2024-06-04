@@ -47,6 +47,9 @@ gluonfx {
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.BuildController',
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController'
     ]
+    release {
+        skipSigning = true
+    }
 }
 javafx {
     version = '22.0.1'
