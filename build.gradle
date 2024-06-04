@@ -18,8 +18,11 @@ ext {
     url = 'https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/'
 }
 
-sourceCompatibility = '8'
-targetCompatibility = '8'
+java {
+    toolchain {
+        sourceCompatibility = JavaLanguageVersion.of(8)
+    }
+}
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
