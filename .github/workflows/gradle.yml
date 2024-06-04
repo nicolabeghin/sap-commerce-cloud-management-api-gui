@@ -43,7 +43,7 @@ jobs:
       run: ./gradlew clean build
 
     - name: Gluon nativeBuild
-      run: ./gradlew nativeBuild
+      run: ./gradlew nativeBuild nativePackage
 
     - uses: actions/upload-artifact@v4
       with:
@@ -78,7 +78,7 @@ jobs:
       run: ./gradlew clean build
 
     - name: Gluon nativeBuild
-      run: ./gradlew nativeBuild
+      run: ./gradlew nativeBuild nativePackage
 
     - uses: actions/upload-artifact@v4
       with:
