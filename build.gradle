@@ -13,13 +13,17 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+        targetCompatibility = JavaLanguageVersion.of(17)
+    }
+}
+
 ext {
     junitVersion = '5.10.0'
     url = 'https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/'
 }
-
-sourceCompatibility = '17'
-targetCompatibility = '17'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
