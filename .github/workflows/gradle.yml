@@ -51,6 +51,12 @@ jobs:
         if-no-files-found: error
         path: build/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
 
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux-target
+        if-no-files-found: error
+        path: target/gluonfx/*
+
   build-osx:
     runs-on: macos-latest
     permissions:
@@ -78,4 +84,10 @@ jobs:
       with:
         name: mac
         if-no-files-found: error
-        path: build/gluonfx/*
+        path: build/gluonfx/x86_64-darwin/sap-commerce-cloud-management-api-gui
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: mac-target
+        if-no-files-found: error
+        path: target/gluonfx/*
