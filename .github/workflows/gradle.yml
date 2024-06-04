@@ -42,14 +42,17 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew clean build
 
-    - name: Gluon nativeBuild
-      run: ./gradlew nativeBuild nativePackage
+    - name: Gluon build
+      run: ./gradlew.bat nativeBuild
 
     - uses: actions/upload-artifact@v4
       with:
         name: linux
         if-no-files-found: error
         path: build/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
+
+    - name: Gluon package
+      run: ./gradlew.bat nativePackage
 
     - uses: actions/upload-artifact@v4
       with:
@@ -77,14 +80,17 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew clean build
 
-    - name: Gluon nativeBuild
-      run: ./gradlew nativeBuild nativePackage
+    - name: Gluon build
+      run: ./gradlew.bat nativeBuild
 
     - uses: actions/upload-artifact@v4
       with:
         name: mac
         if-no-files-found: error
         path: build/gluonfx/x86_64-darwin/sap-commerce-cloud-management-api-gui
+
+    - name: Gluon package
+      run: ./gradlew.bat nativePackage
 
     - uses: actions/upload-artifact@v4
       with:
@@ -118,17 +124,20 @@ jobs:
     - name: Build with Gradle Wrapper
       run: .\gradlew.bat clean build
 
-    - name: Gluon nativeBuild
-      run: .\gradlew.bat nativeBuild nativePackage
-
-#    - uses: actions/upload-artifact@v4
-#      with:
-#        name: windows
-#        if-no-files-found: error
-#        path: build/gluonfx/x86_64-darwin/sap-commerce-cloud-management-api-gui
+    - name: Gluon build
+      run: .\gradlew.bat nativeBuild
 
     - uses: actions/upload-artifact@v4
       with:
         name: windows-build
         if-no-files-found: error
         path: build/*
+
+    - name: Gluon package
+      run: .\gradlew.bat nativePackage
+
+#    - uses: actions/upload-artifact@v4
+#      with:
+#        name: windows
+#        if-no-files-found: error
+#        path: build/gluonfx/x86_64-darwin/sap-commerce-cloud-management-api-gui
