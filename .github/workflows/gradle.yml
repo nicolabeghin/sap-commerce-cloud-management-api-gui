@@ -43,7 +43,7 @@ jobs:
       run: ./gradlew clean build
 
     - name: Gluon build
-      run: ./gradlew.bat nativeBuild
+      run: ./gradlew nativeBuild
 
     - uses: actions/upload-artifact@v4
       with:
@@ -52,7 +52,7 @@ jobs:
         path: build/gluonfx/x86_64-linux/sap-commerce-cloud-management-api-gui
 
     - name: Gluon package
-      run: ./gradlew.bat nativePackage
+      run: ./gradlew nativePackage
 
     - uses: actions/upload-artifact@v4
       with:
@@ -81,7 +81,7 @@ jobs:
       run: ./gradlew clean build
 
     - name: Gluon build
-      run: ./gradlew.bat nativeBuild
+      run: ./gradlew nativeBuild
 
     - uses: actions/upload-artifact@v4
       with:
@@ -90,7 +90,7 @@ jobs:
         path: build/gluonfx/x86_64-darwin/sap-commerce-cloud-management-api-gui
 
     - name: Gluon package
-      run: ./gradlew.bat nativePackage
+      run: ./gradlew nativePackage
 
     - uses: actions/upload-artifact@v4
       with:
