@@ -17,6 +17,6 @@ module sap.commerce.cloud.management.api.gui.main {
     requires org.apache.commons.lang3;
     requires org.slf4j;
     exports com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
-    opens com.nbeghin.ccv2.api.gui.sapcommercecloudapigui to javafx.fxml;
-
+    opens com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
+    opens com.sap.cx.commercecloud.management.openapi.model;
 }
