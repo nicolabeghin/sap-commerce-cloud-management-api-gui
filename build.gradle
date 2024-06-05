@@ -8,6 +8,7 @@ plugins {
 
 group 'com.nbeghin.ccv2.api.gui'
 version '1.0.7'
+description 'A simple cross-platform JavaFX GUI for managing SAP (Hybris) Commerce Cloud'
 
 repositories {
     mavenCentral()
@@ -38,9 +39,13 @@ run {
     jvmArgs = ['--add-exports=javafx.base/com.sun.javafx.event=org.controlsfx.controls']
 }
 gluonfx {
-    mainClassName = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
+    mainClassName = project.application.mainClass
     enableSwRendering = true
     releaseConfiguration.skipSigning = true
+    releaseConfiguration.vendor = "nicolabeghin"
+    releaseConfiguration.packageType = "dmg"
+    releaseConfiguration.version = project.version
+    releaseConfiguration.description = project.description
     reflectionList = [
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.JavaFXApplication',
             'javafx.fxml.FXMLLoader',
