@@ -72,7 +72,8 @@ gluonfx {
             'javafx.scene.layout.Pane',
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.MainController',
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.BuildController',
-            'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController'
+            'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController',
+            'com.sap.cx.commercecloud.management.openapi.model.*'
     ]
 }
 javafx {
