@@ -39,11 +39,11 @@ run {
     jvmArgs = ['--add-exports=javafx.base/com.sun.javafx.event=org.controlsfx.controls']
 }
 gluonfx {
-    mainClassName = project.application.mainClass
+    mainClassName = application.mainClass.get()
     enableSwRendering = true
     releaseConfiguration.skipSigning = true
-    releaseConfiguration.vendor = "nicolabeghin"
-    releaseConfiguration.packageType = "dmg"
+    releaseConfiguration.vendor = 'nicolabeghin'
+    releaseConfiguration.packageType = 'dmg'
     releaseConfiguration.version = project.version
     releaseConfiguration.description = project.description
     reflectionList = [
