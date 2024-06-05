@@ -84,6 +84,7 @@ jobs:
         path: build/gluonfx/x86_64-darwin/sap-commerce-cloud-management-api-gui*
 
   build-windows:
+    if: false
     runs-on: windows-latest
     permissions:
       contents: read
