@@ -47,7 +47,7 @@ gluonfx {
     releaseConfiguration.version = project.version
     releaseConfiguration.versionCode = project.version
     releaseConfiguration.description = project.description
-    releaseConfiguration.versionName
+    releaseConfiguration.versionName = project.version
     reflectionList = [
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.JavaFXApplication',
             'javafx.fxml.FXMLLoader',
