@@ -25,6 +25,7 @@ import java.io.IOException;
  */
 @JsonAdapter(DeploymentDecision.Adapter.class)
 public enum DeploymentDecision {
+
     @SerializedName("ACCEPT") ACCEPT("ACCEPT"), @SerializedName("REJECT") REJECT("REJECT"), @SerializedName("PREPARE_CANARY") PREPARE_CANARY("PREPARE_CANARY");
 
     private final String value;

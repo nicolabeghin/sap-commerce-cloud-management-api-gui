@@ -26,6 +26,10 @@ import java.util.Objects;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2024-05-30T21:55:47.726988+02:00[Europe/Rome]")
 
 public class DeploymentDecisionsDTO {
+
+    public DeploymentDecisionsDTO() {
+    }
+
     @SerializedName("deploymentDecisions")
     private List<DeploymentDecisionDTO> deploymentDecisions = null;
 
