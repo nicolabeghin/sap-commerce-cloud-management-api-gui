@@ -82,7 +82,7 @@ public abstract class AbstractController {
     }
 
     protected void dialogInfo(String header, String content) {
-        App.LOG.warn("INFO - " + header + " - " + content);
+        App.LOG.info(content);
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, content);
             alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -93,6 +93,7 @@ public abstract class AbstractController {
     }
 
     private void dialogError(String header, String content) {
+        App.LOG.error(content);
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, content);
             alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
