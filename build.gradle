@@ -45,6 +45,7 @@ gluonfx {
     releaseConfiguration.vendor = 'nicolabeghin'
     releaseConfiguration.packageType = 'dmg'
     releaseConfiguration.version = project.version
+    releaseConfiguration.versionCode = project.version
     releaseConfiguration.description = project.description
     reflectionList = [
             'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.JavaFXApplication',
@@ -59,6 +60,7 @@ javafx {
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
+// sync gradle properties to a properties file read by app at runtime
 task createProperties(dependsOn: processResources) {
     doLast {
         new File("$buildDir/resources/main/app.properties").withWriter { w ->
