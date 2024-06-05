@@ -1,0 +1,32 @@
+[
+  {
+    "interfaces": [
+      "com.sap.cx.commercecloud.management.openapi.api.BuildApi"
+    ]
+  },
+  {
+    "interfaces": [
+      "com.sap.cx.commercecloud.management.openapi.api.DatabackupApi"
+    ]
+  },
+  {
+    "interfaces": [
+      "com.sap.cx.commercecloud.management.openapi.api.DeploymentApi"
+    ]
+  },
+  {
+    "interfaces": [
+      "com.sap.cx.commercecloud.management.openapi.api.EndpointApi"
+    ]
+  },
+  {
+    "interfaces": [
+      "com.sap.cx.commercecloud.management.openapi.api.EnvironmentApi"
+    ]
+  },
+  {
+    "interfaces": [
+      "com.sap.cx.commercecloud.management.openapi.api.ServicePropertiesApi"
+    ]
+  }
+]
