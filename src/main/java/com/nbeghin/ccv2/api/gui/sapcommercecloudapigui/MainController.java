@@ -417,7 +417,7 @@ public class MainController extends AbstractController implements Initializable 
     }
 
     public void onActionMenuAbout(ActionEvent actionEvent) {
-        dialogInfo("Version 1.0.0");
+        dialogInfo("Version " + App.getAppVersion(), App.getAppDescription() + "\n\nRunning on " + Runtime.version());
     }
 
     public void onSuggestNewBuildName(ActionEvent actionEvent) {

@@ -81,7 +81,7 @@ public abstract class AbstractController {
         Runtime.getRuntime().exec(new String[]{"osascript", "-e", "display notification \"" + content + "\" with title \"" + title + "\" sound name \"Frog\""});
     }
 
-    private void dialogInfo(String header, String content) {
+    protected void dialogInfo(String header, String content) {
         App.LOG.warn("INFO - " + header + " - " + content);
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, content);

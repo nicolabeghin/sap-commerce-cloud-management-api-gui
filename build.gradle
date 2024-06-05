@@ -59,6 +59,21 @@ javafx {
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
+task createProperties(dependsOn: processResources) {
+    doLast {
+        new File("$buildDir/resources/main/app.properties").withWriter { w ->
+            Properties p = new Properties()
+            p['version'] = project.version.toString()
+            p['description'] = project.description.toString()
+            p.store w, null
+        }
+    }
+}
+
+classes {
+    dependsOn createProperties
+}
+
 dependencies {
     implementation('org.controlsfx:controlsfx:11.2.1')
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'

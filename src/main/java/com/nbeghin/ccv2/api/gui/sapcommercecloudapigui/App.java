@@ -4,6 +4,9 @@ import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.prefs.Preferences;
 
 /**
@@ -11,9 +14,30 @@ import java.util.prefs.Preferences;
  */
 public class App {
     public static Logger LOG = LoggerFactory.getLogger(App.class);
+    private static Properties PROPS = new Properties();
 
     public static void main(String[] args) {
+        loadProperties();
         JavaFXApplication.main(args);
+    }
+
+    public static String getAppVersion() {
+        return PROPS.getOrDefault("version", Constants.VERSION).toString();
+    }
+
+    public static String getAppDescription() {
+        return PROPS.getOrDefault("description", "").toString();
+    }
+
+    private static void loadProperties() {
+        InputStream inputStream = App.class.getClassLoader().getResourceAsStream("app.properties");
+        if (inputStream != null) {
+            try {
+                PROPS.load(inputStream);
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+            }
+        }
     }
 
     public static void savePreference(String key, boolean value) {
