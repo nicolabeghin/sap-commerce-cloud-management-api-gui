@@ -4,6 +4,14 @@ A simple cross-platform JavaFX GUI for managing [SAP (Hybris) Commerce Cloud (TM
 
 <img width="832" alt="7" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/a80a909e-9b26-4c2c-bdbd-545428c1392c">
 
+## Disclaimer
+
+**This is an unofficial, community-driven project and is not affiliated with, endorsed by, or supported by SAP SE or its affiliates.**
+
+This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
+
+Use this tool at your own risk. The authors assume no responsibility for any issues that may arise from its use.
+
 ## What it is
 [SAP Commerce Cloud API](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/452dcbb0e00f47e88a69cdaeb87a925d/66abfe678b55457fab235ce8039dda71.html?locale=en-US)
 provides an out-of-the-box way to manage builds and deployments.
