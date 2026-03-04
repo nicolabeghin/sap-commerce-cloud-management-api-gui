@@ -32,6 +32,9 @@ application {
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
 }
 
+run {
+    jvmArgs = ['--add-exports=javafx.base/com.sun.javafx.event=ALL-UNNAMED']
+}
 task packageAppForLinux(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
     platform = "linux"
     createTarball = true
