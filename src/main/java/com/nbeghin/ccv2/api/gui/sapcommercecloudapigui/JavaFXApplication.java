@@ -1,6 +1,7 @@
 package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,7 +21,11 @@ public class JavaFXApplication extends Application {
         Parent root = loader.load();
         MainController controller = loader.getController();
         controller.setPrimaryStage(stage);
-        stage.setOnCloseRequest(event -> controller.shutdownScheduler());
+        stage.setOnCloseRequest(event -> {
+            controller.shutdownScheduler();
+            Platform.exit();
+            System.exit(0);
+        });
         stage.setTitle("sap-commerce-cloud-api-gui");
         stage.setScene(new Scene(root));
         stage.setResizable(false);

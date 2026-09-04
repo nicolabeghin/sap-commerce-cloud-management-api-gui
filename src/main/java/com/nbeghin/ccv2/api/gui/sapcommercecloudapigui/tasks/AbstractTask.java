@@ -70,6 +70,12 @@ public abstract class AbstractTask<T> extends Task<T> {
         super.updateMessage(s);
     }
 
+    public static void startDaemon(javafx.concurrent.Task<?> task) {
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
+    }
+
     protected <R> R execute(Call<R> call) throws IOException {
         Response<R> response = call.execute();
         if (!response.isSuccessful()) {

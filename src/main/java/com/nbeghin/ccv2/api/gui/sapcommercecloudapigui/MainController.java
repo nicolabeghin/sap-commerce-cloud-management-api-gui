@@ -50,7 +50,11 @@ public class MainController extends AbstractController implements Initializable 
     private static final ObservableList<CreateDeploymentRequestDTO.DatabaseUpdateModeEnum> deploymentDatabaseUpdateModes = FXCollections.observableArrayList(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.values());
     private static final ObservableList<CreateDeploymentRequestDTO.StrategyEnum> deploymentStrategies = FXCollections.observableArrayList(CreateDeploymentRequestDTO.StrategyEnum.values());
     private final ObservableList<ScheduledMaintenanceEntry> scheduledMaintenances = FXCollections.observableArrayList();
-    private final ScheduledExecutorService maintenanceScheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService maintenanceScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
 
     static class ScheduledMaintenanceEntry {
         final String label;
@@ -399,7 +403,7 @@ public class MainController extends AbstractController implements Initializable 
             }
         });
         task.setOnFailed(event -> Platform.runLater(() -> dialogError(task.getException().getMessage())));
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     public void onRefreshEndpoints(ActionEvent actionEvent) {
@@ -460,7 +464,7 @@ public class MainController extends AbstractController implements Initializable 
                     dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage());
                 });
             });
-            new Thread(enableTask).start();
+            AbstractTask.startDaemon(enableTask);
         }, startMs - nowMs, TimeUnit.MILLISECONDS);
         futures[1] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
@@ -483,7 +487,7 @@ public class MainController extends AbstractController implements Initializable 
                     scheduledMaintenances.removeIf(en -> en.enableFuture == futures[0]);
                 });
             });
-            new Thread(disableTask).start();
+            AbstractTask.startDaemon(disableTask);
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
         String entryLabel = endpointName + "  " + startLdt.format(fmt) + " → " + endLdt.format(fmt);
         Platform.runLater(() -> scheduledMaintenances.add(new ScheduledMaintenanceEntry(entryLabel, futures[0], futures[1])));
@@ -652,7 +656,7 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnFailed(event -> {
             dialogError(task.getException().getMessage());
         });
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
         notificationInfo("Builds", "Retrieving latest builds");
         mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
     }
@@ -671,7 +675,7 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnFailed(event -> {
             dialogError(task.getException().getMessage());
         });
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
         notificationInfo("Deployments", "Retrieving latest deployments");
         mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
     }
@@ -697,7 +701,7 @@ public class MainController extends AbstractController implements Initializable 
             dialogError(task.getException().getMessage());
         });
         notificationInfo("Environments", "Retrieving available environments");
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     public void onShowBuildDetails(ActionEvent actionEvent) {
@@ -735,7 +739,7 @@ public class MainController extends AbstractController implements Initializable 
         });
         task.setOnCancelled(event -> btnStartBuild.setDisable(false));
         progressDialog.setOnCloseRequest(event -> task.cancel());
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
         progressDialog.showAndWait();
     }
 
@@ -826,7 +830,7 @@ public class MainController extends AbstractController implements Initializable 
         });
         task.setOnCancelled(event -> btnShowDeploymentDetails.setDisable(false));
         progressDialog.setOnCloseRequest(event -> task.cancel());
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
         progressDialog.showAndWait();
     }
 

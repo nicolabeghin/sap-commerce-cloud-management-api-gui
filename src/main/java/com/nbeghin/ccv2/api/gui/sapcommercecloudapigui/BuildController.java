@@ -1,6 +1,7 @@
 package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
 
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.BuildCreateTask;
+import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.AbstractTask;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.BuildWaitForCompletionTask;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.DeploymentCreateTask;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.DeploymentWaitForCompletionTask;
@@ -79,7 +80,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     private void waitForBuildComplete(String buildCode) {
@@ -95,7 +96,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     private void onStartDeploymentFromCompletedBuild(BuildProgressDTO build) {
@@ -118,7 +119,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     private void waitForDeploymentComplete(String deploymentCode) {
@@ -135,7 +136,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 }
 
