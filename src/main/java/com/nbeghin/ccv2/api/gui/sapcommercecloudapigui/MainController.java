@@ -38,6 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -442,6 +443,12 @@ public class MainController extends AbstractController implements Initializable 
         String endpointName = endpoint.getName();
         String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        Optional<ButtonType> confirm = dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
+        if (!confirm.isPresent() || confirm.get() != ButtonType.OK) {
+            return;
+        }
+
         String logScheduled = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode scheduled for \"" + endpointName
                 + "\" — start: " + startLdt.format(fmt) + ", end: " + endLdt.format(fmt);
         App.LOG.info(logScheduled);
@@ -491,7 +498,6 @@ public class MainController extends AbstractController implements Initializable 
             AbstractTask.startDaemon(disableTask);
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
         btnScheduleMaintenance.setText("Cancel maintenance mode");
-        dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
     }
 
     public void shutdownScheduler() {
