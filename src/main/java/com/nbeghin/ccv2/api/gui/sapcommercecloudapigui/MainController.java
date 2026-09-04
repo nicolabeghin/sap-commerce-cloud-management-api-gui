@@ -247,6 +247,7 @@ public class MainController extends AbstractController implements Initializable 
         nameCol.setPrefWidth(90);
         TableColumn lastNameCol = new TableColumn("Name");
         lastNameCol.setPrefWidth(105);
+        lastNameCol.setMaxWidth(Double.MAX_VALUE);
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn statusCol = new TableColumn("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -274,6 +275,7 @@ public class MainController extends AbstractController implements Initializable 
         TableColumn buildCol = new TableColumn("Build");
         buildCol.setCellValueFactory(new PropertyValueFactory<>("buildCode"));
         buildCol.setPrefWidth(90);
+        buildCol.setMaxWidth(Double.MAX_VALUE);
         TableColumn lastNameCol = new TableColumn("Platform Update");
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("databaseUpdateMode"));
         TableColumn strategyCol = new TableColumn("Strategy");
@@ -306,6 +308,7 @@ public class MainController extends AbstractController implements Initializable 
         TableColumn urlCol = new TableColumn("URL");
         urlCol.setCellValueFactory(new PropertyValueFactory<>("url"));
         urlCol.setPrefWidth(180);
+        urlCol.setMaxWidth(Double.MAX_VALUE);
         TableColumn maintenanceCol = new TableColumn("Maintenance");
         maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
         maintenanceCol.setPrefWidth(80);
