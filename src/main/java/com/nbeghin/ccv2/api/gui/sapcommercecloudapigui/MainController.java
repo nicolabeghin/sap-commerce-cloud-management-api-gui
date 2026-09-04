@@ -325,7 +325,8 @@ public class MainController extends AbstractController implements Initializable 
                 setText(null);
                 if (empty || item == null) { setGraphic(null); return; }
                 javafx.scene.control.Hyperlink link = new javafx.scene.control.Hyperlink(item);
-                link.setOnAction(e -> openWebpage(item));
+                String url = item.startsWith("http") ? item : "https://" + item;
+                link.setOnAction(e -> openWebpage(url));
                 setGraphic(link);
             }
         });
