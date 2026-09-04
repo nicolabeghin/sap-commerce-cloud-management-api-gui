@@ -305,10 +305,20 @@ public class MainController extends AbstractController implements Initializable 
         TableColumn nameCol = new TableColumn("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setPrefWidth(120);
-        TableColumn urlCol = new TableColumn("URL");
+        TableColumn<EndpointDetailDTO, String> urlCol = new TableColumn<>("URL");
         urlCol.setCellValueFactory(new PropertyValueFactory<>("url"));
         urlCol.setPrefWidth(180);
         urlCol.setMaxWidth(Double.MAX_VALUE);
+        urlCol.setCellFactory(col -> new TableCell<EndpointDetailDTO, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(null);
+                if (empty || item == null) { setGraphic(null); return; }
+                javafx.scene.control.Hyperlink link = new javafx.scene.control.Hyperlink(item);
+                link.setOnAction(e -> openWebpage(item));
+                setGraphic(link);
+            }
+        });
         TableColumn<EndpointDetailDTO, Boolean> maintenanceCol = new TableColumn<>("Maintenance");
         maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
         maintenanceCol.setPrefWidth(80);
