@@ -26,6 +26,7 @@ import org.controlsfx.glyphfont.FontAwesome;
 
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.util.StringConverter;
+import org.threeten.bp.OffsetDateTime;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -249,9 +250,15 @@ public class MainController extends AbstractController implements Initializable 
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn statusCol = new TableColumn("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        TableColumn buildStartTimestampCol = new TableColumn("Start");
+        TableColumn<BuildDetailDTO, OffsetDateTime> buildStartTimestampCol = new TableColumn<>("Start");
         buildStartTimestampCol.setCellValueFactory(new PropertyValueFactory<>("buildStartTimestamp"));
-        buildStartTimestampCol.setPrefWidth(150);
+        buildStartTimestampCol.setCellFactory(col -> new TableCell<BuildDetailDTO, OffsetDateTime>() {
+            @Override protected void updateItem(OffsetDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : fmtDt(item));
+            }
+        });
+        buildStartTimestampCol.setPrefWidth(120);
         tableBuilds.getColumns().addAll(nameCol, lastNameCol, statusCol, buildStartTimestampCol);
         tableBuilds.setItems(buildsList);
         tableBuilds.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
@@ -275,9 +282,15 @@ public class MainController extends AbstractController implements Initializable 
         strategyCol.setCellValueFactory(new PropertyValueFactory<>("strategy"));
         TableColumn statusCol = new TableColumn("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        TableColumn buildStartTimestampCol = new TableColumn("Start");
+        TableColumn<DeploymentDetailDTO, OffsetDateTime> buildStartTimestampCol = new TableColumn<>("Start");
         buildStartTimestampCol.setCellValueFactory(new PropertyValueFactory<>("createdTimestamp"));
-        buildStartTimestampCol.setPrefWidth(150);
+        buildStartTimestampCol.setCellFactory(col -> new TableCell<DeploymentDetailDTO, OffsetDateTime>() {
+            @Override protected void updateItem(OffsetDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : fmtDt(item));
+            }
+        });
+        buildStartTimestampCol.setPrefWidth(120);
         tableDeployments.getColumns().addAll(nameCol, buildCol, lastNameCol, strategyCol, statusCol, buildStartTimestampCol);
         tableDeployments.setItems(deploymentsList);
         tableDeployments.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
@@ -389,6 +402,13 @@ public class MainController extends AbstractController implements Initializable 
 
     public void shutdownScheduler() {
         maintenanceScheduler.shutdownNow();
+    }
+
+    private static final org.threeten.bp.format.DateTimeFormatter DT_FMT =
+            org.threeten.bp.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private static String fmtDt(OffsetDateTime dt) {
+        return dt == null ? "" : dt.format(DT_FMT);
     }
 
     private void checksForDeploymentSettings() throws Exception {
@@ -575,8 +595,8 @@ public class MainController extends AbstractController implements Initializable 
                     + "Build version: " + b.getBuildVersion() + "\n"
                     + "App def ver:   " + b.getApplicationDefinitionVersion() + "\n"
                     + "Created by:    " + b.getCreatedBy() + "\n"
-                    + "Start:         " + b.getBuildStartTimestamp() + "\n"
-                    + "End:           " + b.getBuildEndTimestamp() + "\n"
+                    + "Start:         " + fmtDt(b.getBuildStartTimestamp()) + "\n"
+                    + "End:           " + fmtDt(b.getBuildEndTimestamp()) + "\n"
                     + "Deployed:      " + b.isDeployed() + "\n"
                     + "Preview:       " + b.isIsPreview();
             dialogDetails("Build details", details);
@@ -665,11 +685,11 @@ public class MainController extends AbstractController implements Initializable 
                     + "Strategy:       " + d.getStrategy() + "\n"
                     + "DB update mode: " + d.getDatabaseUpdateMode() + "\n"
                     + "Created by:     " + d.getCreatedBy() + "\n"
-                    + "Scheduled:      " + d.getScheduledTimestamp() + "\n"
-                    + "Deployed:       " + d.getDeployedTimestamp() + "\n"
-                    + "Failed:         " + d.getFailedTimestamp() + "\n"
+                    + "Scheduled:      " + fmtDt(d.getScheduledTimestamp()) + "\n"
+                    + "Deployed:       " + fmtDt(d.getDeployedTimestamp()) + "\n"
+                    + "Failed:         " + fmtDt(d.getFailedTimestamp()) + "\n"
                     + "Canceled by:    " + d.getCanceledBy() + "\n"
-                    + "Canceled:       " + d.getCanceledTimestamp();
+                    + "Canceled:       " + fmtDt(d.getCanceledTimestamp());
             dialogDetails("Deployment details", details);
         });
         task.setOnFailed(event -> {
