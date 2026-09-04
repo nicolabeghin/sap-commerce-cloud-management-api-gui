@@ -15,6 +15,7 @@ import retrofit2.Response;
 import javafx.concurrent.Task;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractTask<T> extends Task<T> {
 
@@ -28,6 +29,10 @@ public abstract class AbstractTask<T> extends Task<T> {
     public AbstractTask() {
         this.apiClient = new ApiClient();
         apiClient.getAdapterBuilder().baseUrl(Constants.BASE_PATH);
+        apiClient.getOkBuilder()
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS);
         try {
             String token = OAuthTokenFetcher.fetchBearerToken(Constants.CLIENT_ID, Constants.CLIENT_SECRET);
             apiClient.getOkBuilder().addInterceptor(chain ->
