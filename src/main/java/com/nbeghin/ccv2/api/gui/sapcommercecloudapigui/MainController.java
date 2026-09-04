@@ -467,9 +467,11 @@ public class MainController extends AbstractController implements Initializable 
             enableTask.setOnFailed(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to enable maintenance mode on \"" + endpointName + "\": " + enableTask.getException().getMessage();
                 App.LOG.error(msg);
+                if (activeDisableFuture != null) activeDisableFuture.cancel(false);
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage());
+                    btnScheduleMaintenance.setText("Schedule maintenance mode");
                 });
             });
             String startMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to enable maintenance mode on \"" + endpointName + "\"...";
