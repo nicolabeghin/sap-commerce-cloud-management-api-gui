@@ -472,6 +472,9 @@ public class MainController extends AbstractController implements Initializable 
                     dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage());
                 });
             });
+            String startMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to enable maintenance mode on \"" + endpointName + "\"...";
+            App.LOG.info(startMsg);
+            Platform.runLater(() -> txtAreaConsole.appendText(startMsg + "\n"));
             AbstractTask.startDaemon(enableTask);
         }, startMs - nowMs, TimeUnit.MILLISECONDS);
         activeDisableFuture = maintenanceScheduler.schedule(() -> {
@@ -495,6 +498,9 @@ public class MainController extends AbstractController implements Initializable 
                     btnScheduleMaintenance.setText("Schedule maintenance mode");
                 });
             });
+            String endMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to disable maintenance mode on \"" + endpointName + "\"...";
+            App.LOG.info(endMsg);
+            Platform.runLater(() -> txtAreaConsole.appendText(endMsg + "\n"));
             AbstractTask.startDaemon(disableTask);
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
         btnScheduleMaintenance.setText("Cancel maintenance mode");
