@@ -408,7 +408,7 @@ public class MainController extends AbstractController implements Initializable 
             org.threeten.bp.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private static String fmtDt(OffsetDateTime dt) {
-        return dt == null ? "" : dt.format(DT_FMT);
+        return dt == null ? "" : dt.atZoneSameInstant(org.threeten.bp.ZoneId.systemDefault()).format(DT_FMT);
     }
 
     private void checksForDeploymentSettings() throws Exception {
