@@ -714,7 +714,19 @@ public class MainController extends AbstractController implements Initializable 
     public void onActionMenuAbout(ActionEvent actionEvent) {
         String version = System.getProperty("app.version");
         if (version == null) version = App.class.getPackage().getImplementationVersion();
-        dialogInfo("Version " + (version != null ? version : "unknown"));
+        String disclaimer =
+            "Version " + (version != null ? version : "unknown") + "\n\n" +
+            "This is an unofficial, community-driven project and is not affiliated with, " +
+            "endorsed by, or supported by SAP SE or its affiliates.\n\n" +
+            "This software is provided \"as is\", without warranty of any kind, express or " +
+            "implied, including but not limited to the warranties of merchantability, fitness " +
+            "for a particular purpose and noninfringement. In no event shall the authors or " +
+            "copyright holders be liable for any claim, damages or other liability, whether " +
+            "in an action of contract, tort or otherwise, arising from, out of or in " +
+            "connection with the software or the use or other dealings in the software.\n\n" +
+            "Use this tool at your own risk. The authors assume no responsibility for any " +
+            "issues that may arise from its use.";
+        dialogDetails("About", disclaimer);
     }
 
     public void onSuggestNewBuildName(ActionEvent actionEvent) {
