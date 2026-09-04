@@ -20,12 +20,12 @@
         <VBox AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
 
             <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
-                <Tab text="Existing build" fx:id="tabExistingBuild">
-                    <VBox>
+                <Tab text="Existing builds" fx:id="tabExistingBuild">
+                    <VBox VBox.vgrow="ALWAYS">
                         <padding>
                             <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
-                        <TableView fx:id="tableBuilds" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="tableBuilds" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                             <placeholder>
                                 <Label text="No builds loaded"/>
                             </placeholder>
@@ -47,7 +47,7 @@
 
                 </Tab>
                 <Tab text="New build" fx:id="tabNewBuild">
-                    <VBox>
+                    <VBox VBox.vgrow="ALWAYS">
                         <padding>
                             <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
@@ -73,11 +73,11 @@
                 </Tab>
 
                 <Tab text="Deployments" fx:id="tabDeployments">
-                    <VBox>
+                    <VBox VBox.vgrow="ALWAYS">
                         <padding>
                             <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
-                        <TableView fx:id="tableDeployments" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="tableDeployments" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                             <placeholder>
                                 <Label text="No deployments loaded"/>
                             </placeholder>
@@ -99,11 +99,11 @@
                 </Tab>
 
                 <Tab text="Endpoints" fx:id="tabEndpoints">
-                    <VBox spacing="5">
+                    <VBox spacing="5" VBox.vgrow="ALWAYS">
                         <padding>
                             <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
-                        <TableView fx:id="tableEndpoints" disable="true" prefHeight="180.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="tableEndpoints" disable="true" prefHeight="180.0" prefWidth="150.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                             <placeholder>
                                 <Label text="No endpoints loaded"/>
                             </placeholder>
@@ -145,7 +145,7 @@
                 </Tab>
             </TabPane>
 
-            <TextArea fx:id="txtAreaConsole" maxHeight="60" editable="false"/>
+            <TextArea fx:id="txtAreaConsole" maxHeight="90" prefHeight="90" editable="false" wrapText="true"/>
 
             <HBox spacing="5" alignment="CENTER_LEFT">
                 <padding>
