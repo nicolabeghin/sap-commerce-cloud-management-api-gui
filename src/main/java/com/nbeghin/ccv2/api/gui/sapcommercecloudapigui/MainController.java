@@ -260,6 +260,7 @@ public class MainController extends AbstractController implements Initializable 
         });
         buildStartTimestampCol.setPrefWidth(120);
         tableBuilds.getColumns().addAll(nameCol, lastNameCol, statusCol, buildStartTimestampCol);
+        tableBuilds.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableBuilds.setItems(buildsList);
         tableBuilds.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
             if (newValue != null && newValue != oldValue) {
@@ -289,6 +290,7 @@ public class MainController extends AbstractController implements Initializable 
         });
         buildStartTimestampCol.setPrefWidth(120);
         tableDeployments.getColumns().addAll(buildCol, lastNameCol, strategyCol, statusCol, buildStartTimestampCol);
+        tableDeployments.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableDeployments.setItems(deploymentsList);
         tableDeployments.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
             if (newValue != null && newValue != oldValue) {
@@ -308,6 +310,7 @@ public class MainController extends AbstractController implements Initializable 
         maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
         maintenanceCol.setPrefWidth(80);
         tableEndpoints.getColumns().addAll(nameCol, urlCol, maintenanceCol);
+        tableEndpoints.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableEndpoints.setItems(endpointsList);
         tableEndpoints.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             boolean selected = newValue != null;
