@@ -436,13 +436,7 @@ public class MainController extends AbstractController implements Initializable 
             disableTask.setOnFailed(e -> Platform.runLater(() -> dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage())));
             new Thread(disableTask).start();
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
-        dialogInfo("Maintenance window scheduled for \"" + endpointName + "\"\n\n"
-                + "Start:  " + startLdt.format(fmt) + "\n"
-                + "End:    " + endLdt.format(fmt) + "\n\n"
-                + "⚠ Important: this application is responsible for enabling and disabling\n"
-                + "maintenance mode at the scheduled times. It must remain open and running\n"
-                + "until the maintenance window has fully elapsed. Closing the app before\n"
-                + "the end time will prevent the scheduled calls from being made.");
+        dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
     }
 
     public void shutdownScheduler() {
