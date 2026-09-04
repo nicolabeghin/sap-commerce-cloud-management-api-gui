@@ -396,13 +396,19 @@ public class MainController extends AbstractController implements Initializable 
         String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
         EndpointListTask task = new EndpointListTask(environmentCode);
         task.setOnSucceeded(event -> {
+            mainProgressBar.setProgress(100);
             tableEndpoints.setDisable(false);
             endpointsList.clear();
             if (task.getValue() != null && task.getValue().getValue() != null) {
                 endpointsList.addAll(task.getValue().getValue());
             }
         });
-        task.setOnFailed(event -> Platform.runLater(() -> dialogError(task.getException().getMessage())));
+        task.setOnFailed(event -> {
+            mainProgressBar.setProgress(0);
+            Platform.runLater(() -> dialogError(task.getException().getMessage()));
+        });
+        notificationInfo("Endpoints", "Retrieving endpoints");
+        mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         AbstractTask.startDaemon(task);
     }
 
