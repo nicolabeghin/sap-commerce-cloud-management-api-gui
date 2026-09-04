@@ -9,6 +9,7 @@
     <MenuBar fx:id="menuBar" VBox.vgrow="NEVER">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem fx:id="menuItemSettings" mnemonicParsing="false" onAction="#onActionMenuSettings" text="Settings"/>
+            <MenuItem fx:id="menuItemClearConsole" mnemonicParsing="false" onAction="#onActionMenuClearConsole" text="Clear console"/>
             <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" onAction="#onActionMenuQuit" text="Quit"/>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -35,13 +36,6 @@
                                 <Insets top="5.0"/>
                             </padding>
                             <Button fx:id="btnStartDeploy" alignment="BASELINE_RIGHT" disable="true" onAction="#onStartDeploy" text="Deploy"/>
-                            <Button fx:id="btnShowBuildDetails" alignment="BASELINE_LEFT" disable="true" onAction="#onShowBuildDetails" text="Build details"/>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="btnRefreshBuilds" alignment="BASELINE_LEFT" onAction="#onRefreshBuilds">
-                                <tooltip>
-                                    <Tooltip text="Refresh builds"/>
-                                </tooltip>
-                            </Button>
                         </HBox>
                     </VBox>
 
@@ -86,13 +80,6 @@
                             <padding>
                                 <Insets top="5.0"/>
                             </padding>
-                            <Button fx:id="btnShowDeploymentDetails" alignment="BASELINE_LEFT" disable="true" onAction="#onShowDeploymentDetails" text="Deployment details"/>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="btnRefreshDeployments" alignment="BASELINE_LEFT" onAction="#onRefreshDeployments">
-                                <tooltip>
-                                    <Tooltip text="Refresh deployments"/>
-                                </tooltip>
-                            </Button>
                         </HBox>
                     </VBox>
 
@@ -108,38 +95,31 @@
                                 <Label text="No endpoints loaded"/>
                             </placeholder>
                         </TableView>
-                        <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox spacing="5">
                             <padding>
                                 <Insets top="5.0"/>
                             </padding>
-                            <VBox spacing="5">
-                                <HBox alignment="BASELINE_LEFT" spacing="5">
-                                    <Label text="Start:"/>
-                                    <DatePicker fx:id="datePickerMaintenanceStart" promptText="Date" disable="true" prefWidth="115"/>
-                                    <Spinner fx:id="spinnerMaintenanceHour" prefWidth="60" disable="true"/>
-                                    <Label text=":"/>
-                                    <Spinner fx:id="spinnerMaintenanceMinute" prefWidth="60" disable="true"/>
-                                </HBox>
-                                <HBox alignment="BASELINE_LEFT" spacing="5">
-                                    <Label text="End:  "/>
-                                    <DatePicker fx:id="datePickerMaintenanceEnd" promptText="Date" disable="true" prefWidth="115"/>
-                                    <Spinner fx:id="spinnerMaintenanceEndHour" prefWidth="60" disable="true"/>
-                                    <Label text=":"/>
-                                    <Spinner fx:id="spinnerMaintenanceEndMinute" prefWidth="60" disable="true"/>
-                                </HBox>
-                            </VBox>
+                            <HBox alignment="BASELINE_LEFT" spacing="10">
+                                <Label text="Start:">
+                                    <tooltip><Tooltip text="Maintenance start date and time"/></tooltip>
+                                </Label>
+                                <DatePicker fx:id="datePickerMaintenanceStart" promptText="Date" disable="true" prefWidth="115"/>
+                                <Spinner fx:id="spinnerMaintenanceHour" prefWidth="60" disable="true"/>
+                                <Label text=":"/>
+                                <Spinner fx:id="spinnerMaintenanceMinute" prefWidth="60" disable="true"/>
+                                <Label text="End:">
+                                    <tooltip><Tooltip text="Maintenance end date and time"/></tooltip>
+                                </Label>
+                                <DatePicker fx:id="datePickerMaintenanceEnd" promptText="Date" disable="true" prefWidth="115"/>
+                                <Spinner fx:id="spinnerMaintenanceEndHour" prefWidth="60" disable="true"/>
+                                <Label text=":"/>
+                                <Spinner fx:id="spinnerMaintenanceEndMinute" prefWidth="60" disable="true"/>
+                            </HBox>
                             <Button fx:id="btnScheduleMaintenance" disable="true"
                                     onAction="#onScheduleMaintenance" text="Schedule maintenance mode"
-                                    maxHeight="Infinity"/>
-                        </HBox>
+                                    maxWidth="Infinity"/>
+                        </VBox>
                         <HBox spacing="5">
-                            <Button fx:id="btnShowEndpointDetails" disable="true" onAction="#onShowEndpointDetails" text="Endpoint details"/>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="btnRefreshEndpoints" onAction="#onRefreshEndpoints">
-                                <tooltip>
-                                    <Tooltip text="Refresh endpoints"/>
-                                </tooltip>
-                            </Button>
                         </HBox>
                     </VBox>
                 </Tab>
@@ -167,6 +147,11 @@
                     </tooltip>
                 </ComboBox>
                 <ProgressBar fx:id="mainProgressBar" progress="0" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Button fx:id="btnRefresh" onAction="#onRefresh">
+                    <tooltip>
+                        <Tooltip text="Refresh"/>
+                    </tooltip>
+                </Button>
             </HBox>
         </VBox>
 

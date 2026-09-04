@@ -61,23 +61,17 @@ public class MainController extends AbstractController implements Initializable 
     @FXML
     public TabPane tabPane;
     @FXML
-    public Button btnRefreshDeployments;
-    @FXML
-    public Button btnShowDeploymentDetails;
-    @FXML
     private TableView tableDeployments;
     @FXML
     private CheckBox checkboxDeployAfterBuild;
     @FXML
-    private Button btnRefreshBuilds;
+    private Button btnRefresh;
     @FXML
     private TextArea txtAreaConsole;
     @FXML
     private Button btnStartBuild;
     @FXML
     private ProgressBar mainProgressBar;
-    @FXML
-    private Button btnShowBuildDetails;
     @FXML
     private TextField txtGitBranches;
     @FXML
@@ -112,10 +106,8 @@ public class MainController extends AbstractController implements Initializable 
     private Spinner<Integer> spinnerMaintenanceEndMinute;
     @FXML
     private Button btnScheduleMaintenance;
-    @FXML
-    private Button btnRefreshEndpoints;
-    @FXML
-    private Button btnShowEndpointDetails;
+
+
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -172,14 +164,12 @@ public class MainController extends AbstractController implements Initializable 
                         || ("tabExistingBuild".equals(tabId) && tableBuilds.getSelectionModel().getSelectedIndex() != -1);
                 comboDeploymentStrategies.setDisable(!enabled);
                 comboDeploymentDatabaseUpdateMode.setDisable(!enabled);
+                boolean refreshable = "tabExistingBuild".equals(tabId) || "tabDeployments".equals(tabId) || "tabEndpoints".equals(tabId);
+                btnRefresh.setDisable(!refreshable);
             }
         });
-        btnRefreshBuilds.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
-        btnRefreshDeployments.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
-        btnRefreshEndpoints.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
-        btnShowBuildDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
-        btnShowDeploymentDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
-        btnShowEndpointDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
+        btnRefresh.setDisable(false);
+        btnRefresh.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
         btnStartBuild.setGraphic(fontAwesome.create(FontAwesome.Glyph.BUILDING));
         btnStartDeploy.setGraphic(fontAwesome.create(FontAwesome.Glyph.CLOUD_UPLOAD));
         btnProposeBuildName.setGraphic(fontAwesome.create(FontAwesome.Glyph.LIGHTBULB_ALT));
@@ -282,11 +272,20 @@ public class MainController extends AbstractController implements Initializable 
         tableBuilds.setItems(buildsList);
         tableBuilds.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
             if (newValue != null && newValue != oldValue) {
-                btnShowBuildDetails.setDisable(false);
                 btnStartDeploy.setDisable(false);
                 comboDeploymentStrategies.setDisable(false);
                 comboDeploymentDatabaseUpdateMode.setDisable(false);
             }
+        });
+        tableBuilds.setRowFactory(tv -> {
+            TableRow<BuildDetailDTO> row = new TableRow<>();
+            row.setTooltip(new Tooltip("Double-click to show build details"));
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    onShowBuildDetails(null);
+                }
+            });
+            return row;
         });
     }
 
@@ -313,10 +312,15 @@ public class MainController extends AbstractController implements Initializable 
         tableDeployments.getColumns().addAll(buildCol, lastNameCol, strategyCol, statusCol, buildStartTimestampCol);
         tableDeployments.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableDeployments.setItems(deploymentsList);
-        tableDeployments.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
-            if (newValue != null && newValue != oldValue) {
-                btnShowDeploymentDetails.setDisable(false);
-            }
+        tableDeployments.setRowFactory(tv -> {
+            TableRow<DeploymentDetailDTO> row = new TableRow<>();
+            row.setTooltip(new Tooltip("Double-click to show deployment details"));
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    onShowDeploymentDetails(null);
+                }
+            });
+            return row;
         });
     }
 
@@ -336,6 +340,9 @@ public class MainController extends AbstractController implements Initializable 
                 javafx.scene.control.Hyperlink link = new javafx.scene.control.Hyperlink(item);
                 String url = item.startsWith("http") ? item : "https://" + item;
                 link.setOnAction(e -> openWebpage(url));
+                Runnable updateColor = () -> link.setStyle(isSelected() ? "-fx-text-fill: white;" : "-fx-text-fill: #1a73e8;");
+                updateColor.run();
+                selectedProperty().addListener((obs, wasSelected, nowSelected) -> updateColor.run());
                 setGraphic(link);
             }
         });
@@ -365,7 +372,6 @@ public class MainController extends AbstractController implements Initializable 
         tableEndpoints.setItems(endpointsList);
         tableEndpoints.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             boolean selected = newValue != null;
-            btnShowEndpointDetails.setDisable(!selected);
             btnScheduleMaintenance.setDisable(!selected);
             if (selected) {
                 EndpointDetailDTO ep = (EndpointDetailDTO) newValue;
@@ -376,7 +382,7 @@ public class MainController extends AbstractController implements Initializable 
                 datePickerMaintenanceEnd.setDisable(inMaintenance);
                 spinnerMaintenanceEndHour.setDisable(inMaintenance);
                 spinnerMaintenanceEndMinute.setDisable(inMaintenance);
-                btnScheduleMaintenance.setText(inMaintenance ? "Disable maintenance mode" : "Schedule maintenance mode");
+                setMaintenanceButtonState(inMaintenance ? "Disable maintenance mode" : "Schedule maintenance mode");
             } else {
                 datePickerMaintenanceStart.setDisable(true);
                 spinnerMaintenanceHour.setDisable(true);
@@ -384,8 +390,18 @@ public class MainController extends AbstractController implements Initializable 
                 datePickerMaintenanceEnd.setDisable(true);
                 spinnerMaintenanceEndHour.setDisable(true);
                 spinnerMaintenanceEndMinute.setDisable(true);
-                btnScheduleMaintenance.setText("Schedule maintenance mode");
+                setMaintenanceButtonState("Schedule maintenance mode");
             }
+        });
+        tableEndpoints.setRowFactory(tv -> {
+            TableRow<EndpointDetailDTO> row = new TableRow<>();
+            row.setTooltip(new Tooltip("Double-click to show endpoint details"));
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    onShowEndpointDetails(null);
+                }
+            });
+            return row;
         });
     }
 
@@ -402,12 +418,13 @@ public class MainController extends AbstractController implements Initializable 
             if (task.getValue() != null && task.getValue().getValue() != null) {
                 endpointsList.addAll(task.getValue().getValue());
             }
+            Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Endpoints loaded (" + endpointsList.size() + ")") + "\n"));
         });
         task.setOnFailed(event -> {
             mainProgressBar.setProgress(0);
             Platform.runLater(() -> dialogError(task.getException().getMessage()));
         });
-        notificationInfo("Endpoints", "Retrieving endpoints");
+        txtAreaConsole.appendText(logMsg("Loading endpoints...") + "\n");
         mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
         AbstractTask.startDaemon(task);
     }
@@ -421,11 +438,11 @@ public class MainController extends AbstractController implements Initializable 
         if ("Cancel maintenance mode".equals(btnScheduleMaintenance.getText())) {
             if (activeEnableFuture != null) activeEnableFuture.cancel(false);
             if (activeDisableFuture != null) activeDisableFuture.cancel(false);
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode cancelled";
             App.LOG.info(msg);
             txtAreaConsole.appendText(msg + "\n");
-            btnScheduleMaintenance.setText("Schedule maintenance mode");
+            setMaintenanceButtonState("Schedule maintenance mode");
             return;
         }
         if ("Disable maintenance mode".equals(btnScheduleMaintenance.getText())) {
@@ -433,7 +450,7 @@ public class MainController extends AbstractController implements Initializable 
             String endpointCode = endpoint.getCode();
             String endpointName = endpoint.getName();
             String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String startMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to disable maintenance mode on \"" + endpointName + "\"...";
             App.LOG.info(startMsg);
             txtAreaConsole.appendText(startMsg + "\n");
@@ -485,7 +502,7 @@ public class MainController extends AbstractController implements Initializable 
         String endpointCode = endpoint.getCode();
         String endpointName = endpoint.getName();
         String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         Optional<ButtonType> confirm = dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
         if (!confirm.isPresent() || confirm.get() != ButtonType.OK) {
@@ -514,7 +531,7 @@ public class MainController extends AbstractController implements Initializable 
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage());
-                    btnScheduleMaintenance.setText("Schedule maintenance mode");
+                    setMaintenanceButtonState("Schedule maintenance mode");
                 });
             });
             String startMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to enable maintenance mode on \"" + endpointName + "\"...";
@@ -531,7 +548,7 @@ public class MainController extends AbstractController implements Initializable 
                     txtAreaConsole.appendText(msg + "\n");
                     notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
                     onLoadEndpoints();
-                    btnScheduleMaintenance.setText("Schedule maintenance mode");
+                    setMaintenanceButtonState("Schedule maintenance mode");
                 });
             });
             disableTask.setOnFailed(e -> {
@@ -540,7 +557,7 @@ public class MainController extends AbstractController implements Initializable 
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage());
-                    btnScheduleMaintenance.setText("Schedule maintenance mode");
+                    setMaintenanceButtonState("Schedule maintenance mode");
                 });
             });
             String endMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to disable maintenance mode on \"" + endpointName + "\"...";
@@ -548,7 +565,7 @@ public class MainController extends AbstractController implements Initializable 
             Platform.runLater(() -> txtAreaConsole.appendText(endMsg + "\n"));
             AbstractTask.startDaemon(disableTask);
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
-        btnScheduleMaintenance.setText("Cancel maintenance mode");
+        setMaintenanceButtonState("Cancel maintenance mode");
     }
 
     public void shutdownScheduler() {
@@ -560,6 +577,19 @@ public class MainController extends AbstractController implements Initializable 
 
     private static String fmtDt(OffsetDateTime dt) {
         return dt == null ? "" : dt.atZoneSameInstant(org.threeten.bp.ZoneId.systemDefault()).format(DT_FMT);
+    }
+
+    private static String logMsg(String msg) {
+        return "[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "] " + msg;
+    }
+
+    private void setMaintenanceButtonState(String text) {
+        btnScheduleMaintenance.setText(text);
+        if ("Schedule maintenance mode".equals(text)) {
+            btnScheduleMaintenance.setStyle("-fx-base: #f0ad4e; -fx-text-fill: #000;");
+        } else {
+            btnScheduleMaintenance.setStyle("");
+        }
     }
 
     private void checksForDeploymentSettings() throws Exception {
@@ -671,12 +701,13 @@ public class MainController extends AbstractController implements Initializable 
             tableBuilds.setDisable(false);
             buildsList.addAll(Objects.requireNonNull(task.getValue().getValue()));
             btnProposeBuildName.setDisable(false);
+            Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Builds loaded (" + buildsList.size() + ")") + "\n"));
         });
         task.setOnFailed(event -> {
             dialogError(task.getException().getMessage());
         });
         AbstractTask.startDaemon(task);
-        notificationInfo("Builds", "Retrieving latest builds");
+        txtAreaConsole.appendText(logMsg("Loading builds...") + "\n");
         mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
     }
 
@@ -690,12 +721,13 @@ public class MainController extends AbstractController implements Initializable 
             mainProgressBar.setProgress(100);
             tableDeployments.setDisable(false);
             deploymentsList.addAll(task.getValue().getValue());
+            Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Deployments loaded (" + deploymentsList.size() + ")") + "\n"));
         });
         task.setOnFailed(event -> {
             dialogError(task.getException().getMessage());
         });
         AbstractTask.startDaemon(task);
-        notificationInfo("Deployments", "Retrieving latest deployments");
+        txtAreaConsole.appendText(logMsg("Loading deployments...") + "\n");
         mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
     }
 
@@ -711,6 +743,7 @@ public class MainController extends AbstractController implements Initializable 
             } else {
                 comboEnvironments.getSelectionModel().select(0);
             }
+            Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Environments loaded (" + environmentsList.size() + ")") + "\n"));
             if (tabPane.getSelectionModel().getSelectedItem() != null
                     && "tabEndpoints".equals(tabPane.getSelectionModel().getSelectedItem().getId())) {
                 onLoadEndpoints();
@@ -719,7 +752,7 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnFailed(event -> {
             dialogError(task.getException().getMessage());
         });
-        notificationInfo("Environments", "Retrieving available environments");
+        txtAreaConsole.appendText(logMsg("Loading environments...") + "\n");
         AbstractTask.startDaemon(task);
     }
 
@@ -728,7 +761,6 @@ public class MainController extends AbstractController implements Initializable 
             dialogError("No build selected");
             return;
         }
-        btnShowBuildDetails.setDisable(true);
         BuildDetailTask task = new BuildDetailTask(((BuildDetailDTO) tableBuilds.getSelectionModel().getSelectedItem()).getCode());
         ProgressDialog progressDialog = new ProgressDialog(task);
         progressDialog.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -736,7 +768,6 @@ public class MainController extends AbstractController implements Initializable 
         progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
         progressDialog.setGraphic(null);
         task.setOnSucceeded(event -> {
-            btnShowBuildDetails.setDisable(false);
             progressDialog.close();
             BuildDetailDTO b = task.getValue();
             String details = "Code:          " + b.getCode() + "\n"
@@ -753,10 +784,8 @@ public class MainController extends AbstractController implements Initializable 
             dialogDetails("Build details", details);
         });
         task.setOnFailed(event -> {
-            btnShowBuildDetails.setDisable(false);
             dialogError(task.getException().getMessage());
         });
-        task.setOnCancelled(event -> btnStartBuild.setDisable(false));
         progressDialog.setOnCloseRequest(event -> task.cancel());
         AbstractTask.startDaemon(task);
         progressDialog.showAndWait();
@@ -815,6 +844,17 @@ public class MainController extends AbstractController implements Initializable 
         showDeployDialog(createDeploymentRequestDTO);
     }
 
+    @FXML
+    public void onRefresh(ActionEvent actionEvent) {
+        Tab selected = tabPane.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+        switch (selected.getId()) {
+            case "tabExistingBuild": onRefreshBuilds(actionEvent); break;
+            case "tabDeployments":   onRefreshDeployments(actionEvent); break;
+            case "tabEndpoints":     onRefreshEndpoints(actionEvent); break;
+        }
+    }
+
     public void onRefreshBuilds(ActionEvent actionEvent) {
         buildsList.clear();
         onLoadLatestBuilds();
@@ -830,7 +870,6 @@ public class MainController extends AbstractController implements Initializable 
             dialogError("No deployment selected");
             return;
         }
-        btnShowDeploymentDetails.setDisable(true);
         DeploymentDetailTask task = new DeploymentDetailTask(((DeploymentDetailDTO) tableDeployments.getSelectionModel().getSelectedItem()).getCode());
         ProgressDialog progressDialog = new ProgressDialog(task);
         progressDialog.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -838,7 +877,6 @@ public class MainController extends AbstractController implements Initializable 
         progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
         progressDialog.setGraphic(null);
         task.setOnSucceeded(event -> {
-            btnShowDeploymentDetails.setDisable(false);
             progressDialog.close();
             DeploymentDetailDTO d = task.getValue();
             String details = "Code:           " + d.getCode() + "\n"
@@ -856,10 +894,8 @@ public class MainController extends AbstractController implements Initializable 
             dialogDetails("Deployment details", details);
         });
         task.setOnFailed(event -> {
-            btnShowDeploymentDetails.setDisable(false);
             dialogError(task.getException().getMessage());
         });
-        task.setOnCancelled(event -> btnShowDeploymentDetails.setDisable(false));
         progressDialog.setOnCloseRequest(event -> task.cancel());
         AbstractTask.startDaemon(task);
         progressDialog.showAndWait();
@@ -887,5 +923,10 @@ public class MainController extends AbstractController implements Initializable 
 
     public void onActionMenuSettings(ActionEvent actionEvent) {
         showSettingsDialog();
+    }
+
+    @FXML
+    public void onActionMenuClearConsole(ActionEvent actionEvent) {
+        txtAreaConsole.clear();
     }
 }
