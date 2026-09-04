@@ -18,31 +18,43 @@ provides an out-of-the-box way to manage builds and deployments.
 
 * Trigger a build
 * Find a list of available builds
-* Find the details for a specific build
 * Download build logs
 * Trigger a deployment
 * Find a list of deployments
-* Find the details for a specific deployment
 * Get the options for canceling a deployment and, if necessary, cancel a deployment
+* Enable and disable maintenance mode for a given endpoint
 
 A [CLI](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/9116f1cfd16049c3a531bfb6a681ff77/8acde53272c64efb908b9f0745498015.html?locale=en-US) is
 provided but no GUI:
 this is where `sap-commerce-cloud-management-api-gui` comes into play.
 
 ### Existing builds
+* **Double-click** any row to see full build details (version, timestamps, branch, created by, etc.)
+
 <img width="480" alt="3" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/0f256603-384a-4c91-9106-3fb97f003deb">
 
 ### New build
+* Trigger a build from a Git branch or tag, with an optional auto-suggested build name
+* Optionally deploy automatically after the build completes
+
 <img width="480" alt="1" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/fb1fb911-5ee1-4892-a20c-5f6943eeb6f9">
 
 ### Deployments
+* Deploy with configurable strategy and DB update mode
+* **Double-click** any row to see full deployment details
+
 <img width="480" alt="2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/c834d0fe-1094-4363-8bab-bf0c213a2e1f">
+
+### Endpoints
+* View all endpoints for the selected environment, including their current maintenance state
+* **Schedule maintenance mode**: pick a start and end date/time; the app will enable and disable maintenance automatically at the scheduled times
+* **Disable maintenance mode** immediately for endpoints currently in maintenance
+* Cancel a pending maintenance schedule at any time
 
 ## Credentials
 At first start you'll be prompted for
-* **Cloud Portal API token**: generate an API token from the Cloud Portal,
-see [Generating API Tokens](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/0fa6bcf4736c46f78c248512391eb467/b5d4d851cbd54469906a089bb8dd58d8.html?locale=en-US).
-* **Subscription code**: it can be found subscription code in the Cloud Portal URL, it appears after `subscription/` in the URL
+* **Client ID** and **Client secret**: OAuth2 credentials — see [Creating a Technical User](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/0c2050f6d31f49ddb6eba18509060ae5/57bef96f18034193af93d2cc36f6d526.html?locale=en-US&version=LATEST).
+* **Subscription code**: found in the Cloud Portal URL after `subscription/`
 
 <img width="338" alt="8_2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/3c8092d7-4871-49d4-966e-4a2f5d8c7669">
 
