@@ -129,7 +129,7 @@ public abstract class AbstractController {
             alert.setContentText(null);
             TextArea textArea = new TextArea(content);
             textArea.setEditable(false);
-            textArea.setWrapText(false);
+            textArea.setWrapText(true);
             textArea.setMaxWidth(Double.MAX_VALUE);
             textArea.setMaxHeight(Double.MAX_VALUE);
             GridPane.setVgrow(textArea, Priority.ALWAYS);
