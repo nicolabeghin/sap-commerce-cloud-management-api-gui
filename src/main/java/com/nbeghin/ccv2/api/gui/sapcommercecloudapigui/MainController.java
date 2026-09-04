@@ -159,10 +159,11 @@ public class MainController extends AbstractController implements Initializable 
                 onLoadEndpoints();
             }
             if (newValue != null && newValue != oldValue) {
-                boolean newBuild = "tabNewBuild".equals(newValue.getId());
-                boolean buildSelected = tableBuilds.getSelectionModel().getSelectedIndex() != -1;
-                comboDeploymentStrategies.setDisable(!newBuild && !buildSelected);
-                comboDeploymentDatabaseUpdateMode.setDisable(!newBuild && !buildSelected);
+                String tabId = newValue.getId();
+                boolean enabled = "tabNewBuild".equals(tabId)
+                        || ("tabExistingBuild".equals(tabId) && tableBuilds.getSelectionModel().getSelectedIndex() != -1);
+                comboDeploymentStrategies.setDisable(!enabled);
+                comboDeploymentDatabaseUpdateMode.setDisable(!enabled);
             }
         });
         btnRefreshBuilds.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
