@@ -6,6 +6,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -93,6 +96,7 @@ public abstract class AbstractController {
     }
 
     private void dialogError(String header, String content) {
+        App.LOG.error("ERROR - " + header + " - " + content);
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, content);
             alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -108,6 +112,28 @@ public abstract class AbstractController {
 
     protected void dialogInfo(String content) {
         dialogInfo("INFO", content);
+    }
+
+    protected void dialogDetails(String title, String content) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(null);
+            TextArea textArea = new TextArea(content);
+            textArea.setEditable(false);
+            textArea.setWrapText(false);
+            textArea.setMaxWidth(Double.MAX_VALUE);
+            textArea.setMaxHeight(Double.MAX_VALUE);
+            GridPane.setVgrow(textArea, Priority.ALWAYS);
+            GridPane.setHgrow(textArea, Priority.ALWAYS);
+            GridPane grid = new GridPane();
+            grid.setMaxWidth(Double.MAX_VALUE);
+            grid.add(textArea, 0, 0);
+            alert.getDialogPane().setContent(grid);
+            alert.getDialogPane().setPrefSize(520, 400);
+            alert.showAndWait();
+        });
     }
 
     protected void openWebpage(String site) {

@@ -24,19 +24,30 @@ import org.controlsfx.control.textfield.TextFields;
 import org.controlsfx.dialog.ProgressDialog;
 import org.controlsfx.glyphfont.FontAwesome;
 
-import java.net.URL;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.util.StringConverter;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.net.URL;
 import java.util.ResourceBundle;
 
 public class MainController extends AbstractController implements Initializable {
     private static final ObservableList<BuildDetailDTO> buildsList = FXCollections.observableArrayList();
     private static final ObservableList<DeploymentDetailDTO> deploymentsList = FXCollections.observableArrayList();
     private static final ObservableList<EnvironmentDetailDTO> environmentsList = FXCollections.observableArrayList(); // @TODO
+    private static final ObservableList<EndpointDetailDTO> endpointsList = FXCollections.observableArrayList();
     private static final ObservableList<String> gitBranches = FXCollections.observableArrayList("develop", "master", "production");
     private static final ObservableList<CreateDeploymentRequestDTO.DatabaseUpdateModeEnum> deploymentDatabaseUpdateModes = FXCollections.observableArrayList(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.values());
     private static final ObservableList<CreateDeploymentRequestDTO.StrategyEnum> deploymentStrategies = FXCollections.observableArrayList(CreateDeploymentRequestDTO.StrategyEnum.values());
+    private final ScheduledExecutorService maintenanceScheduler = Executors.newSingleThreadScheduledExecutor();
     private static Stage primaryStage;
     @FXML
     public TabPane tabPane;
@@ -76,6 +87,24 @@ public class MainController extends AbstractController implements Initializable 
     private TextField txtBuildCode;
     @FXML
     private MenuBar menuBar;
+    @FXML
+    private TableView tableEndpoints;
+    @FXML
+    private DatePicker datePickerMaintenanceStart;
+    @FXML
+    private Spinner<Integer> spinnerMaintenanceHour;
+    @FXML
+    private Spinner<Integer> spinnerMaintenanceMinute;
+    @FXML
+    private DatePicker datePickerMaintenanceEnd;
+    @FXML
+    private Spinner<Integer> spinnerMaintenanceEndHour;
+    @FXML
+    private Spinner<Integer> spinnerMaintenanceEndMinute;
+    @FXML
+    private Button btnScheduleMaintenance;
+    @FXML
+    private Button btnRefreshEndpoints;
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -89,6 +118,10 @@ public class MainController extends AbstractController implements Initializable 
     public void initialize(URL url, ResourceBundle resourceBundle) {
         TextFields.bindAutoCompletion(txtGitBranches, gitBranches);
         comboEnvironments.setItems(environmentsList);
+        comboEnvironments.setConverter(new StringConverter<EnvironmentDetailDTO>() {
+            @Override public String toString(EnvironmentDetailDTO e) { return e == null ? "" : e.getName(); }
+            @Override public EnvironmentDetailDTO fromString(String s) { return null; }
+        });
         tableDeployments.setItems(deploymentsList);
         comboDeploymentDatabaseUpdateMode.setItems(deploymentDatabaseUpdateModes);
         comboDeploymentStrategies.setItems(deploymentStrategies);
@@ -96,6 +129,15 @@ public class MainController extends AbstractController implements Initializable 
         comboDeploymentDatabaseUpdateMode.getSelectionModel().select(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.NONE);
         initializeBuildsTable();
         initializeDeploymentsTable();
+        initializeEndpointsTable();
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDateTime startDefault = java.time.LocalDateTime.now().plusHours(1);
+        spinnerMaintenanceHour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, startDefault.getHour()));
+        spinnerMaintenanceMinute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, startDefault.getMinute()));
+        spinnerMaintenanceEndHour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, startDefault.getHour() + 1 > 23 ? 23 : startDefault.getHour() + 1));
+        spinnerMaintenanceEndMinute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, startDefault.getMinute()));
+        datePickerMaintenanceStart.setValue(startDefault.toLocalDate());
+        datePickerMaintenanceEnd.setValue(startDefault.toLocalDate());
         txtBuildCode.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !StringUtils.isEmpty(newValue)) {
                 if (comboEnvironments.getSelectionModel().getSelectedIndex() != -1) {
@@ -108,9 +150,13 @@ public class MainController extends AbstractController implements Initializable 
             if (newValue != null && newValue != oldValue && "tabDeployments".equals(newValue.getId()) && deploymentsList.isEmpty()) {
                 onLoadLatestDeployments();
             }
+            if (newValue != null && newValue != oldValue && "tabEndpoints".equals(newValue.getId()) && endpointsList.isEmpty()) {
+                onLoadEndpoints();
+            }
         });
         btnRefreshBuilds.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
         btnRefreshDeployments.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
+        btnRefreshEndpoints.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
         btnShowBuildDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
         btnShowDeploymentDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
         btnStartBuild.setGraphic(fontAwesome.create(FontAwesome.Glyph.BUILDING));
@@ -140,6 +186,9 @@ public class MainController extends AbstractController implements Initializable 
                 if ("tabDeployments".equals(tabPane.getSelectionModel().getSelectedItem().getId())) {
                     onRefreshDeployments(null);
                 }
+                if ("tabEndpoints".equals(tabPane.getSelectionModel().getSelectedItem().getId())) {
+                    onLoadEndpoints();
+                }
             }
         });
         comboDeploymentStrategies.valueProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
@@ -160,11 +209,15 @@ public class MainController extends AbstractController implements Initializable 
         if (StringUtils.isNotBlank(subscriptionCode)) {
             Constants.SUBSCRIPTION_CODE = subscriptionCode;
         }
-        String accessToken = App.getPreference(Constants.PREFS_ACCESS_TOKEN);
+        String accessToken = App.getPreference(Constants.PREFS_CLIENT_ID);
         if (StringUtils.isNotBlank(accessToken)) {
-            Constants.ACCESS_TOKEN = accessToken;
+            Constants.CLIENT_ID = accessToken;
         }
-        if (StringUtils.isBlank(Constants.SUBSCRIPTION_CODE) || StringUtils.isBlank(Constants.ACCESS_TOKEN)) {
+        String clientSecret = App.getPreference(Constants.PREFS_CLIENT_SECRET);
+        if (StringUtils.isNotBlank(clientSecret)) {
+            Constants.CLIENT_SECRET = clientSecret;
+        }
+        if (StringUtils.isBlank(Constants.SUBSCRIPTION_CODE) || StringUtils.isBlank(Constants.CLIENT_ID) || StringUtils.isBlank(Constants.CLIENT_SECRET)) {
             showSettingsDialog();
         }
 
@@ -231,7 +284,110 @@ public class MainController extends AbstractController implements Initializable 
         });
     }
 
-    private void checksForDeploymentSettings() throws Exception{
+    private void initializeEndpointsTable() {
+        TableColumn nameCol = new TableColumn("Name");
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        nameCol.setPrefWidth(120);
+        TableColumn urlCol = new TableColumn("URL");
+        urlCol.setCellValueFactory(new PropertyValueFactory<>("url"));
+        urlCol.setPrefWidth(180);
+        TableColumn maintenanceCol = new TableColumn("Maintenance");
+        maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
+        maintenanceCol.setPrefWidth(80);
+        tableEndpoints.getColumns().addAll(nameCol, urlCol, maintenanceCol);
+        tableEndpoints.setItems(endpointsList);
+        tableEndpoints.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            boolean selected = newValue != null;
+            btnScheduleMaintenance.setDisable(!selected);
+            datePickerMaintenanceStart.setDisable(!selected);
+            spinnerMaintenanceHour.setDisable(!selected);
+            spinnerMaintenanceMinute.setDisable(!selected);
+            datePickerMaintenanceEnd.setDisable(!selected);
+            spinnerMaintenanceEndHour.setDisable(!selected);
+            spinnerMaintenanceEndMinute.setDisable(!selected);
+        });
+    }
+
+    private void onLoadEndpoints() {
+        if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
+            return;
+        }
+        String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+        EndpointListTask task = new EndpointListTask(environmentCode);
+        task.setOnSucceeded(event -> {
+            tableEndpoints.setDisable(false);
+            endpointsList.clear();
+            if (task.getValue() != null && task.getValue().getValue() != null) {
+                endpointsList.addAll(task.getValue().getValue());
+            }
+        });
+        task.setOnFailed(event -> Platform.runLater(() -> dialogError(task.getException().getMessage())));
+        new Thread(task).start();
+    }
+
+    public void onRefreshEndpoints(ActionEvent actionEvent) {
+        endpointsList.clear();
+        onLoadEndpoints();
+    }
+
+    public void onScheduleMaintenance(ActionEvent actionEvent) {
+        if (tableEndpoints.getSelectionModel().getSelectedIndex() == -1) {
+            dialogError("No endpoint selected");
+            return;
+        }
+        LocalDate startDate = datePickerMaintenanceStart.getValue();
+        LocalDate endDate = datePickerMaintenanceEnd.getValue();
+        if (startDate == null || endDate == null) {
+            dialogError("Start and end dates are required");
+            return;
+        }
+        LocalDateTime startLdt = startDate.atTime(spinnerMaintenanceHour.getValue(), spinnerMaintenanceMinute.getValue());
+        LocalDateTime endLdt = endDate.atTime(spinnerMaintenanceEndHour.getValue(), spinnerMaintenanceEndMinute.getValue());
+        long nowMs = System.currentTimeMillis();
+        long startMs = startLdt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endMs = endLdt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        if (startMs < nowMs) {
+            dialogError("Start time is in the past");
+            return;
+        }
+        if (endMs <= startMs) {
+            dialogError("End time must be after start time");
+            return;
+        }
+        EndpointDetailDTO endpoint = (EndpointDetailDTO) tableEndpoints.getSelectionModel().getSelectedItem();
+        String endpointCode = endpoint.getCode();
+        String endpointName = endpoint.getName();
+        String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        maintenanceScheduler.schedule(() -> {
+            EndpointSetMaintenanceModeTask enableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, true);
+            enableTask.setOnSucceeded(e -> {
+                Platform.runLater(() -> notificationInfo("Maintenance started", "Maintenance mode enabled on " + endpointName));
+                onLoadEndpoints();
+            });
+            enableTask.setOnFailed(e -> Platform.runLater(() -> dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage())));
+            new Thread(enableTask).start();
+        }, startMs - nowMs, TimeUnit.MILLISECONDS);
+        maintenanceScheduler.schedule(() -> {
+            EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
+            disableTask.setOnSucceeded(e -> {
+                Platform.runLater(() -> notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName));
+                onLoadEndpoints();
+            });
+            disableTask.setOnFailed(e -> Platform.runLater(() -> dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage())));
+            new Thread(disableTask).start();
+        }, endMs - nowMs, TimeUnit.MILLISECONDS);
+        dialogInfo("Maintenance scheduled for " + endpointName
+                + "\nStart: " + startLdt.format(fmt)
+                + "\nEnd:   " + endLdt.format(fmt)
+                + "\nNote: closing the app will cancel the scheduled maintenance.");
+    }
+
+    public void shutdownScheduler() {
+        maintenanceScheduler.shutdownNow();
+    }
+
+    private void checksForDeploymentSettings() throws Exception {
         if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
             throw new Exception("No environment selected");
         }
@@ -380,6 +536,10 @@ public class MainController extends AbstractController implements Initializable 
             } else {
                 comboEnvironments.getSelectionModel().select(0);
             }
+            if (tabPane.getSelectionModel().getSelectedItem() != null
+                    && "tabEndpoints".equals(tabPane.getSelectionModel().getSelectedItem().getId())) {
+                onLoadEndpoints();
+            }
         });
         task.setOnFailed(event -> {
             dialogError(task.getException().getMessage());
@@ -403,8 +563,19 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnSucceeded(event -> {
             btnShowBuildDetails.setDisable(false);
             progressDialog.close();
-            BuildDetailDTO extractionResult = task.getValue();
-            txtAreaConsole.setText(extractionResult.toString());
+            BuildDetailDTO b = task.getValue();
+            String details = "Code:          " + b.getCode() + "\n"
+                    + "Name:          " + b.getName() + "\n"
+                    + "Branch:        " + b.getBranch() + "\n"
+                    + "Status:        " + b.getStatus() + "\n"
+                    + "Build version: " + b.getBuildVersion() + "\n"
+                    + "App def ver:   " + b.getApplicationDefinitionVersion() + "\n"
+                    + "Created by:    " + b.getCreatedBy() + "\n"
+                    + "Start:         " + b.getBuildStartTimestamp() + "\n"
+                    + "End:           " + b.getBuildEndTimestamp() + "\n"
+                    + "Deployed:      " + b.isDeployed() + "\n"
+                    + "Preview:       " + b.isIsPreview();
+            dialogDetails("Build details", details);
         });
         task.setOnFailed(event -> {
             btnShowBuildDetails.setDisable(false);
@@ -417,7 +588,9 @@ public class MainController extends AbstractController implements Initializable 
     }
 
     public void onActionMenuAbout(ActionEvent actionEvent) {
-        dialogInfo("Version 1.0.0");
+        String version = System.getProperty("app.version");
+        if (version == null) version = App.class.getPackage().getImplementationVersion();
+        dialogInfo("Version " + (version != null ? version : "unknown"));
     }
 
     public void onSuggestNewBuildName(ActionEvent actionEvent) {
@@ -480,8 +653,20 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnSucceeded(event -> {
             btnShowDeploymentDetails.setDisable(false);
             progressDialog.close();
-            DeploymentDetailDTO deploymentDetailDTO = task.getValue();
-            txtAreaConsole.setText(deploymentDetailDTO.toString());
+            DeploymentDetailDTO d = task.getValue();
+            String details = "Code:           " + d.getCode() + "\n"
+                    + "Build:          " + d.getBuildCode() + "\n"
+                    + "Environment:    " + d.getEnvironmentCode() + "\n"
+                    + "Status:         " + d.getStatus() + "\n"
+                    + "Strategy:       " + d.getStrategy() + "\n"
+                    + "DB update mode: " + d.getDatabaseUpdateMode() + "\n"
+                    + "Created by:     " + d.getCreatedBy() + "\n"
+                    + "Scheduled:      " + d.getScheduledTimestamp() + "\n"
+                    + "Deployed:       " + d.getDeployedTimestamp() + "\n"
+                    + "Failed:         " + d.getFailedTimestamp() + "\n"
+                    + "Canceled by:    " + d.getCanceledBy() + "\n"
+                    + "Canceled:       " + d.getCanceledTimestamp();
+            dialogDetails("Deployment details", details);
         });
         task.setOnFailed(event -> {
             btnShowDeploymentDetails.setDisable(false);
