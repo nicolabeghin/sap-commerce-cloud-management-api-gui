@@ -7,15 +7,19 @@
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController"
-            prefHeight="150.0" prefWidth="200.0">
+            prefHeight="180.0" prefWidth="200.0">
     <VBox spacing="5" alignment="CENTER" VBox.vgrow="ALWAYS">
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
         <HBox VBox.vgrow="ALWAYS" alignment="BASELINE_LEFT" spacing="5">
-            <Text text="CCV2 API token      " />
-            <PasswordField fx:id="txtAccessToken" promptText="CCV2 API token"/>
-            <Button fx:id="btnInfoAccessToken" onAction="#onHelpAccessToken" />
+            <Text text="Client ID             " />
+            <TextField fx:id="txtClientId" promptText="OAuth2 client ID"/>
+            <Button fx:id="btnInfoClientCredentials" onAction="#onHelpClientCredentials" />
+        </HBox>
+        <HBox VBox.vgrow="ALWAYS" alignment="BASELINE_LEFT" spacing="5">
+            <Text text="Client secret      " />
+            <PasswordField fx:id="txtClientSecret" promptText="OAuth2 client secret"/>
         </HBox>
         <HBox VBox.vgrow="ALWAYS"  alignment="BASELINE_LEFT" spacing="5">
             <Text text="CCV2 subscription " />

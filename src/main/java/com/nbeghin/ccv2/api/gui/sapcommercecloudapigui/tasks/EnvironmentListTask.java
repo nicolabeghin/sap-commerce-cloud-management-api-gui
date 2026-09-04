@@ -14,6 +14,6 @@ public class EnvironmentListTask extends AbstractTask<EnvironmentDetailsDTO> {
     protected EnvironmentDetailsDTO call() throws IOException {
         updateProgress(0, 100);
         updateMessage("Loading environments...");
-        return getEnvironmentApi().getEnvironments(Constants.SUBSCRIPTION_CODE, null, null).execute().body();
+        return execute(getEnvironmentApi().getEnvironments(Constants.SUBSCRIPTION_CODE, "AVAILABLE", null));
     }
 }

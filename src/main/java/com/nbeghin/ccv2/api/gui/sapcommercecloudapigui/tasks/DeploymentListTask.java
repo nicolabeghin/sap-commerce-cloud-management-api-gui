@@ -17,6 +17,6 @@ public class DeploymentListTask extends AbstractTask<DeploymentDetailsDTO> {
     protected DeploymentDetailsDTO call() throws IOException {
         updateProgress(0, 100);
         updateMessage("Loading latest deployments...");
-        return getDeploymentApi().getDeployments(Constants.SUBSCRIPTION_CODE, null, environmentCode, null, 5, null, null, false).execute().body();
+        return execute(getDeploymentApi().getDeployments(Constants.SUBSCRIPTION_CODE, null, environmentCode, null, 5, null, null, false));
     }
 }

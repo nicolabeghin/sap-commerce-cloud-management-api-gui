@@ -43,3 +43,6 @@ bin/
 
 *.log
 .idea
+
+swagger-codegen-cli*.jar
+openapi.yml

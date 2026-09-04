@@ -15,6 +15,6 @@ public class BuildListTask extends AbstractTask<BuildDetailsDTO> {
     protected BuildDetailsDTO call() throws IOException {
         updateProgress(0, 100);
         updateMessage("Loading latest builds...");
-        return getBuildApi().getBuilds(Constants.SUBSCRIPTION_CODE, new ArrayList<>(), Constants.MAX_NUM_BUILDS, 0, "buildStartTimestamp desc", false).execute().body();
+        return execute(getBuildApi().getBuilds(Constants.SUBSCRIPTION_CODE, new ArrayList<>(), Constants.MAX_NUM_BUILDS, 0, "buildStartTimestamp desc", false));
     }
 }

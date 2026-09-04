@@ -7,8 +7,14 @@ import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.okhttp.OkHttpTiming
 import com.sap.cx.commercecloud.management.openapi.ApiClient;
 import com.sap.cx.commercecloud.management.openapi.api.BuildApi;
 import com.sap.cx.commercecloud.management.openapi.api.DeploymentApi;
+import com.sap.cx.commercecloud.management.openapi.api.EndpointApi;
 import com.sap.cx.commercecloud.management.openapi.api.EnvironmentApi;
+import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.OAuthTokenFetcher;
+import retrofit2.Call;
+import retrofit2.Response;
 import javafx.concurrent.Task;
+
+import java.io.IOException;
 
 public abstract class AbstractTask<T> extends Task<T> {
 
@@ -17,9 +23,21 @@ public abstract class AbstractTask<T> extends Task<T> {
     private final EnvironmentApi environmentApi;
     private final DeploymentApi deploymentApi;
 
+    private final EndpointApi endpointApi;
+
     public AbstractTask() {
-        this.apiClient = new ApiClient("OAuth2");
-        apiClient.setAccessToken(Constants.ACCESS_TOKEN);
+        this.apiClient = new ApiClient();
+        apiClient.getAdapterBuilder().baseUrl(Constants.BASE_PATH);
+        try {
+            String token = OAuthTokenFetcher.fetchBearerToken(Constants.CLIENT_ID, Constants.CLIENT_SECRET);
+            apiClient.getOkBuilder().addInterceptor(chain ->
+                chain.proceed(chain.request().newBuilder()
+                    .header("x-approuter-authorization", "Bearer " + token)
+                    .build())
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to obtain OAuth2 token: " + e.getMessage(), e);
+        }
         if (Constants.DEBUG_ENABLED) {
             apiClient.getOkBuilder().addInterceptor(new OkHttpLoggingInterceptor());
         }
@@ -27,6 +45,7 @@ public abstract class AbstractTask<T> extends Task<T> {
         buildApi = this.apiClient.createService(BuildApi.class);
         environmentApi = this.apiClient.createService(EnvironmentApi.class);
         deploymentApi = this.apiClient.createService(DeploymentApi.class);
+        endpointApi = this.apiClient.createService(EndpointApi.class);
     }
 
     protected BuildApi getBuildApi() {
@@ -41,9 +60,25 @@ public abstract class AbstractTask<T> extends Task<T> {
         return this.deploymentApi;
     }
 
+    protected EndpointApi getEndpointApi() {
+        return endpointApi;
+    }
+
     @Override
     protected void updateMessage(String s) {
         App.LOG.info(s);
         super.updateMessage(s);
+    }
+
+    protected <R> R execute(Call<R> call) throws IOException {
+        Response<R> response = call.execute();
+        if (!response.isSuccessful()) {
+            String error = response.errorBody() != null ? response.errorBody().string() : "";
+            if (response.code() == 401) {
+                throw new IOException("HTTP 401 Unauthorized - API token may have expired. " + error);
+            }
+            throw new IOException("HTTP " + response.code() + " " + response.message() + ": " + error);
+        }
+        return response.body();
     }
 }

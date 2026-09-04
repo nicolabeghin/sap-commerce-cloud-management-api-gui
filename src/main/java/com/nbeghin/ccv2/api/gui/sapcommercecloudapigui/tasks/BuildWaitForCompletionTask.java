@@ -33,7 +33,7 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         int waitTime = 0;
 
         while (true) {
-            BuildProgressDTO currentProgress = getBuildApi().getBuildProgress(Constants.SUBSCRIPTION_CODE, buildCode).execute().body();
+            BuildProgressDTO currentProgress = execute(getBuildApi().getBuildProgress(Constants.SUBSCRIPTION_CODE, buildCode));
             int previousNumOfStartedTasks = previousProgress == null ? 0 : previousProgress.getStartedTasks().size();
             if (currentProgress.getStartedTasks().size() > previousNumOfStartedTasks) {
                 currentProgress.getStartedTasks().stream().skip(previousNumOfStartedTasks).forEach((startedTaskDTO) -> {
@@ -66,7 +66,7 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         String previousStatus = null;
 
         while (true) {
-            String currentStatus = getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, buildCode).execute().body().getStatus();
+            String currentStatus = execute(getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, buildCode)).getStatus();
             if (!"UNKNOWN".equals(currentStatus) && !"SCHEDULED".equals(currentStatus)) {
                 return;
             }

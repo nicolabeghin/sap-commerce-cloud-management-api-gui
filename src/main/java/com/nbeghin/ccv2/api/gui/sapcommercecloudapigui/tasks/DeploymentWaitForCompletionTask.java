@@ -45,7 +45,7 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         int waitTime = 0;
 
         while (!failed[0]) {
-            DeploymentProgressDTO currentProgress = getDeploymentApi().getDeploymentProgress(Constants.SUBSCRIPTION_CODE, deploymentCode).execute().body();
+            DeploymentProgressDTO currentProgress = execute(getDeploymentApi().getDeploymentProgress(Constants.SUBSCRIPTION_CODE, deploymentCode));
             DeploymentProgressDTO tmpProgress = previousProgress == null ? new DeploymentProgressDTO() : previousProgress;
             currentProgress.getStages().stream().skip(this.countPrintedStages(tmpProgress)).forEach((stage) -> {
                 this.printStage(stage, tmpProgress, failed);
@@ -83,7 +83,7 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         String previousStatus = null;
 
         while (true) {
-            String currentStatus = getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, deploymentCode).execute().body().getStatus();
+            String currentStatus = execute(getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, deploymentCode)).getStatus();
             if (!"SCHEDULED".equals(currentStatus)) {
                 return;
             }

@@ -20,7 +20,7 @@ public class BuildCreateTask extends AbstractTask<CreateBuildResponseDTO> {
         updateProgress(0, 100);
         updateTitle("Build request");
         updateMessage("Entering build request...");
-        CreateBuildResponseDTO createBuildResponseDTO = getBuildApi().createBuild(createBuildRequestDTO, Constants.SUBSCRIPTION_CODE).execute().body();
+        CreateBuildResponseDTO createBuildResponseDTO = execute(getBuildApi().createBuild(createBuildRequestDTO, Constants.SUBSCRIPTION_CODE));
         updateProgress(100, 100);
         updateMessage("Build request accepted - " + createBuildResponseDTO.getCode());
         return createBuildResponseDTO;

@@ -18,6 +18,6 @@ public class BuildDetailTask extends AbstractTask<BuildDetailDTO> {
     protected BuildDetailDTO call() throws IOException {
         updateProgress(0, 100);
         updateMessage("Please wait...");
-        return getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, this.buildCode).execute().body();
+        return execute(getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, this.buildCode));
     }
 }
