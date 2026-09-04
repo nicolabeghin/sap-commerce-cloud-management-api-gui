@@ -270,9 +270,6 @@ public class MainController extends AbstractController implements Initializable 
     }
 
     private void initializeDeploymentsTable() {
-        TableColumn nameCol = new TableColumn("Env");
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("environmentCode"));
-        nameCol.setPrefWidth(20);
         TableColumn buildCol = new TableColumn("Build");
         buildCol.setCellValueFactory(new PropertyValueFactory<>("buildCode"));
         buildCol.setPrefWidth(90);
@@ -291,7 +288,7 @@ public class MainController extends AbstractController implements Initializable 
             }
         });
         buildStartTimestampCol.setPrefWidth(120);
-        tableDeployments.getColumns().addAll(nameCol, buildCol, lastNameCol, strategyCol, statusCol, buildStartTimestampCol);
+        tableDeployments.getColumns().addAll(buildCol, lastNameCol, strategyCol, statusCol, buildStartTimestampCol);
         tableDeployments.setItems(deploymentsList);
         tableDeployments.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { // backup is selected
             if (newValue != null && newValue != oldValue) {
