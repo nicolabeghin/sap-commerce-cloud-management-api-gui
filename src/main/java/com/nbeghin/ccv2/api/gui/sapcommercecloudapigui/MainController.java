@@ -338,7 +338,7 @@ public class MainController extends AbstractController implements Initializable 
                 setGraphic(link);
             }
         });
-        TableColumn<EndpointDetailDTO, Boolean> maintenanceCol = new TableColumn<>("Maintenance");
+        TableColumn<EndpointDetailDTO, Boolean> maintenanceCol = new TableColumn<>("Maintenance mode");
         maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
         maintenanceCol.setPrefWidth(80);
         maintenanceCol.setCellFactory(col -> new TableCell<EndpointDetailDTO, Boolean>() {
@@ -404,14 +404,14 @@ public class MainController extends AbstractController implements Initializable 
     }
 
     public void onScheduleMaintenance(ActionEvent actionEvent) {
-        if ("Cancel maintenance".equals(btnScheduleMaintenance.getText())) {
+        if ("Cancel maintenance mode".equals(btnScheduleMaintenance.getText())) {
             if (activeEnableFuture != null) activeEnableFuture.cancel(false);
             if (activeDisableFuture != null) activeDisableFuture.cancel(false);
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance cancelled";
+            String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode cancelled";
             App.LOG.info(msg);
             txtAreaConsole.appendText(msg + "\n");
-            btnScheduleMaintenance.setText("Schedule maintenance");
+            btnScheduleMaintenance.setText("Schedule maintenance mode");
             return;
         }
         if (tableEndpoints.getSelectionModel().getSelectedIndex() == -1) {
@@ -442,7 +442,7 @@ public class MainController extends AbstractController implements Initializable 
         String endpointName = endpoint.getName();
         String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String logScheduled = "[" + LocalDateTime.now().format(fmt) + "] Maintenance scheduled for \"" + endpointName
+        String logScheduled = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode scheduled for \"" + endpointName
                 + "\" — start: " + startLdt.format(fmt) + ", end: " + endLdt.format(fmt);
         App.LOG.info(logScheduled);
         txtAreaConsole.appendText(logScheduled + "\n");
@@ -476,7 +476,7 @@ public class MainController extends AbstractController implements Initializable 
                     txtAreaConsole.appendText(msg + "\n");
                     notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
                     onLoadEndpoints();
-                    btnScheduleMaintenance.setText("Schedule maintenance");
+                    btnScheduleMaintenance.setText("Schedule maintenance mode");
                 });
             });
             disableTask.setOnFailed(e -> {
@@ -485,12 +485,12 @@ public class MainController extends AbstractController implements Initializable 
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage());
-                    btnScheduleMaintenance.setText("Schedule maintenance");
+                    btnScheduleMaintenance.setText("Schedule maintenance mode");
                 });
             });
             AbstractTask.startDaemon(disableTask);
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
-        btnScheduleMaintenance.setText("Cancel maintenance");
+        btnScheduleMaintenance.setText("Cancel maintenance mode");
         dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
     }
 

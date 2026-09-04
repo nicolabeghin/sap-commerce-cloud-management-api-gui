@@ -129,7 +129,7 @@
                                 </HBox>
                             </VBox>
                             <Button fx:id="btnScheduleMaintenance" disable="true"
-                                    onAction="#onScheduleMaintenance" text="Schedule maintenance"
+                                    onAction="#onScheduleMaintenance" text="Schedule maintenance mode"
                                     maxHeight="Infinity"/>
                         </HBox>
                         <HBox spacing="5">
@@ -166,7 +166,7 @@
                         <Tooltip text="Database update mode"/>
                     </tooltip>
                 </ComboBox>
-                <ProgressBar fx:id="mainProgressBar" prefWidth="80" progress="0" HBox.hgrow="NEVER"/>
+                <ProgressBar fx:id="mainProgressBar" progress="0" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             </HBox>
         </VBox>
 
