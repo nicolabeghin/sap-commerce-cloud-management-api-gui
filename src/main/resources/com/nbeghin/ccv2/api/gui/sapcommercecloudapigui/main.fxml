@@ -23,7 +23,7 @@
                 <Tab text="Existing build" fx:id="tabExistingBuild">
                     <VBox>
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
                         <TableView fx:id="tableBuilds" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
                             <placeholder>
@@ -49,7 +49,7 @@
                 <Tab text="New build" fx:id="tabNewBuild">
                     <VBox>
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
                         <HBox alignment="CENTER_LEFT" spacing="5">
                             <TextField fx:id="txtGitBranches" promptText="Git branch or tag" HBox.hgrow="ALWAYS"/>
@@ -75,7 +75,7 @@
                 <Tab text="Deployments" fx:id="tabDeployments">
                     <VBox>
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
                         <TableView fx:id="tableDeployments" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
                             <placeholder>
@@ -101,7 +101,7 @@
                 <Tab text="Endpoints" fx:id="tabEndpoints">
                     <VBox spacing="5">
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
                         <TableView fx:id="tableEndpoints" disable="true" prefHeight="180.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
                             <placeholder>
@@ -145,15 +145,9 @@
                 </Tab>
             </TabPane>
 
-            <ListView fx:id="listScheduledMaintenances" maxHeight="80"
-                      style="-fx-background-color: #fff3cd; -fx-border-color: #f0ad4e; -fx-border-radius: 4;">
-                <placeholder><Label text="No scheduled maintenances"/></placeholder>
-            </ListView>
-
-            <ProgressBar fx:id="mainProgressBar" maxWidth="Infinity" progress="Infinity"/>
             <TextArea fx:id="txtAreaConsole" maxHeight="60" editable="false"/>
 
-            <HBox spacing="5">
+            <HBox spacing="5" alignment="CENTER_LEFT">
                 <padding>
                     <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
                 </padding>
@@ -172,6 +166,7 @@
                         <Tooltip text="Database update mode"/>
                     </tooltip>
                 </ComboBox>
+                <ProgressBar fx:id="mainProgressBar" prefWidth="80" progress="0" HBox.hgrow="NEVER"/>
             </HBox>
         </VBox>
 
