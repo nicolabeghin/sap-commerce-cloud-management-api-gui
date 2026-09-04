@@ -97,6 +97,52 @@
                     </VBox>
 
                 </Tab>
+
+                <Tab text="Endpoints" fx:id="tabEndpoints">
+                    <VBox spacing="5">
+                        <padding>
+                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                        </padding>
+                        <TableView fx:id="tableEndpoints" disable="true" prefHeight="180.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                            <placeholder>
+                                <Label text="No endpoints loaded"/>
+                            </placeholder>
+                        </TableView>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <padding>
+                                <Insets top="5.0"/>
+                            </padding>
+                            <VBox spacing="5">
+                                <HBox alignment="BASELINE_LEFT" spacing="5">
+                                    <Label text="Start:"/>
+                                    <DatePicker fx:id="datePickerMaintenanceStart" promptText="Date" disable="true" prefWidth="115"/>
+                                    <Spinner fx:id="spinnerMaintenanceHour" prefWidth="60" disable="true"/>
+                                    <Label text=":"/>
+                                    <Spinner fx:id="spinnerMaintenanceMinute" prefWidth="60" disable="true"/>
+                                </HBox>
+                                <HBox alignment="BASELINE_LEFT" spacing="5">
+                                    <Label text="End:  "/>
+                                    <DatePicker fx:id="datePickerMaintenanceEnd" promptText="Date" disable="true" prefWidth="115"/>
+                                    <Spinner fx:id="spinnerMaintenanceEndHour" prefWidth="60" disable="true"/>
+                                    <Label text=":"/>
+                                    <Spinner fx:id="spinnerMaintenanceEndMinute" prefWidth="60" disable="true"/>
+                                </HBox>
+                            </VBox>
+                            <Button fx:id="btnScheduleMaintenance" disable="true"
+                                    onAction="#onScheduleMaintenance" text="Schedule maintenance"
+                                    maxHeight="Infinity"/>
+                        </HBox>
+                        <HBox spacing="5">
+                            <Button fx:id="btnShowEndpointDetails" disable="true" onAction="#onShowEndpointDetails" text="Endpoint details"/>
+                            <Pane HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnRefreshEndpoints" onAction="#onRefreshEndpoints">
+                                <tooltip>
+                                    <Tooltip text="Refresh endpoints"/>
+                                </tooltip>
+                            </Button>
+                        </HBox>
+                    </VBox>
+                </Tab>
             </TabPane>
 
             <ProgressBar fx:id="mainProgressBar" maxWidth="Infinity" progress="Infinity"/>

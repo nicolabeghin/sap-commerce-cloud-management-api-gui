@@ -20,6 +20,7 @@ public class JavaFXApplication extends Application {
         Parent root = loader.load();
         MainController controller = loader.getController();
         controller.setPrimaryStage(stage);
+        stage.setOnCloseRequest(event -> controller.shutdownScheduler());
         stage.setTitle("sap-commerce-cloud-api-gui");
         stage.setScene(new Scene(root));
         stage.setResizable(false);

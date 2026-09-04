@@ -105,6 +105,8 @@ public class MainController extends AbstractController implements Initializable 
     private Button btnScheduleMaintenance;
     @FXML
     private Button btnRefreshEndpoints;
+    @FXML
+    private Button btnShowEndpointDetails;
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -159,6 +161,7 @@ public class MainController extends AbstractController implements Initializable 
         btnRefreshEndpoints.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
         btnShowBuildDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
         btnShowDeploymentDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
+        btnShowEndpointDetails.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
         btnStartBuild.setGraphic(fontAwesome.create(FontAwesome.Glyph.BUILDING));
         btnStartDeploy.setGraphic(fontAwesome.create(FontAwesome.Glyph.CLOUD_UPLOAD));
         btnProposeBuildName.setGraphic(fontAwesome.create(FontAwesome.Glyph.LIGHTBULB_ALT));
@@ -298,6 +301,7 @@ public class MainController extends AbstractController implements Initializable 
         tableEndpoints.setItems(endpointsList);
         tableEndpoints.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             boolean selected = newValue != null;
+            btnShowEndpointDetails.setDisable(!selected);
             btnScheduleMaintenance.setDisable(!selected);
             datePickerMaintenanceStart.setDisable(!selected);
             spinnerMaintenanceHour.setDisable(!selected);
@@ -681,6 +685,21 @@ public class MainController extends AbstractController implements Initializable 
     public void onRefreshDeployments(ActionEvent actionEvent) {
         deploymentsList.clear();
         onLoadLatestDeployments();
+    }
+
+    public void onShowEndpointDetails(ActionEvent actionEvent) {
+        if (tableEndpoints.getSelectionModel().getSelectedIndex() == -1) {
+            dialogError("No endpoint selected");
+            return;
+        }
+        EndpointDetailDTO e = (EndpointDetailDTO) tableEndpoints.getSelectionModel().getSelectedItem();
+        String details = "Code:             " + e.getCode() + "\n"
+                + "Name:             " + e.getName() + "\n"
+                + "URL:              " + e.getUrl() + "\n"
+                + "Web proxy:        " + e.getWebProxy() + "\n"
+                + "Service:          " + e.getService() + "\n"
+                + "Maintenance mode: " + e.isMaintenanceMode();
+        dialogDetails("Endpoint details", details);
     }
 
     public void onActionMenuSettings(ActionEvent actionEvent) {
