@@ -449,8 +449,8 @@ public class MainController extends AbstractController implements Initializable 
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     notificationInfo("Maintenance started", "Maintenance mode enabled on " + endpointName);
+                    onLoadEndpoints();
                 });
-                onLoadEndpoints();
             });
             enableTask.setOnFailed(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to enable maintenance mode on \"" + endpointName + "\": " + enableTask.getException().getMessage();
@@ -470,9 +470,9 @@ public class MainController extends AbstractController implements Initializable 
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
+                    onLoadEndpoints();
+                    scheduledMaintenances.removeIf(en -> en.enableFuture == futures[0]);
                 });
-                onLoadEndpoints();
-                Platform.runLater(() -> scheduledMaintenances.removeIf(en -> en.enableFuture == futures[0]));
             });
             disableTask.setOnFailed(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to disable maintenance mode on \"" + endpointName + "\": " + disableTask.getException().getMessage();
