@@ -130,6 +130,8 @@ public class MainController extends AbstractController implements Initializable 
         comboDeploymentStrategies.setItems(deploymentStrategies);
         comboDeploymentStrategies.getSelectionModel().select(CreateDeploymentRequestDTO.StrategyEnum.ROLLING_UPDATE);
         comboDeploymentDatabaseUpdateMode.getSelectionModel().select(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.NONE);
+        comboDeploymentStrategies.setDisable(true);
+        comboDeploymentDatabaseUpdateMode.setDisable(true);
         initializeBuildsTable();
         initializeDeploymentsTable();
         initializeEndpointsTable();
@@ -155,6 +157,12 @@ public class MainController extends AbstractController implements Initializable 
             }
             if (newValue != null && newValue != oldValue && "tabEndpoints".equals(newValue.getId()) && endpointsList.isEmpty()) {
                 onLoadEndpoints();
+            }
+            if (newValue != null && newValue != oldValue) {
+                boolean newBuild = "tabNewBuild".equals(newValue.getId());
+                boolean buildSelected = tableBuilds.getSelectionModel().getSelectedIndex() != -1;
+                comboDeploymentStrategies.setDisable(!newBuild && !buildSelected);
+                comboDeploymentDatabaseUpdateMode.setDisable(!newBuild && !buildSelected);
             }
         });
         btnRefreshBuilds.setGraphic(fontAwesome.create(FontAwesome.Glyph.REFRESH));
@@ -267,6 +275,8 @@ public class MainController extends AbstractController implements Initializable 
             if (newValue != null && newValue != oldValue) {
                 btnShowBuildDetails.setDisable(false);
                 btnStartDeploy.setDisable(false);
+                comboDeploymentStrategies.setDisable(false);
+                comboDeploymentDatabaseUpdateMode.setDisable(false);
             }
         });
     }

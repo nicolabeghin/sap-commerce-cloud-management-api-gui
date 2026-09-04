@@ -20,7 +20,7 @@
         <VBox AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
 
             <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
-                <Tab text="Existing build">
+                <Tab text="Existing build" fx:id="tabExistingBuild">
                     <VBox>
                         <padding>
                             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
@@ -46,7 +46,7 @@
                     </VBox>
 
                 </Tab>
-                <Tab text="New build">
+                <Tab text="New build" fx:id="tabNewBuild">
                     <VBox>
                         <padding>
                             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
