@@ -315,6 +315,7 @@ public class MainController extends AbstractController implements Initializable 
         maintenanceCol.setCellFactory(col -> new TableCell<EndpointDetailDTO, Boolean>() {
             @Override protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(javafx.geometry.Pos.CENTER);
                 setText(null);
                 if (empty || item == null) { setGraphic(null); return; }
                 if (item) {
@@ -328,6 +329,7 @@ public class MainController extends AbstractController implements Initializable 
                 }
             }
         });
+        maintenanceCol.setStyle("-fx-alignment: CENTER;");
         tableEndpoints.getColumns().addAll(nameCol, urlCol, maintenanceCol);
         tableEndpoints.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableEndpoints.setItems(endpointsList);
