@@ -27,7 +27,7 @@ public class OAuthOkHttpClient implements HttpClient {
 
     public <T extends OAuthClientResponse> T execute(OAuthClientRequest request, Map<String, String> headers, String requestMethod, Class<T> responseClass) throws OAuthSystemException, OAuthProblemException {
 
-        MediaType mediaType = MediaType.parse("application/json");
+        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
         Request.Builder requestBuilder = new Request.Builder().url(request.getLocationUri());
 
         if (headers != null) {

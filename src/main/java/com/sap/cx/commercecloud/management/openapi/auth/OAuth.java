@@ -136,12 +136,12 @@ public class OAuth implements Interceptor {
                     }
                     return !getAccessToken().equals(requestAccessToken);
                 } else {
-                    return false;
+                    throw new IOException("OAuth token fetch returned empty response: " + (accessTokenResponse != null ? accessTokenResponse.getBody() : "null"));
                 }
             } catch (OAuthSystemException e) {
                 throw new IOException(e);
             } catch (OAuthProblemException e) {
-                throw new IOException(e);
+                throw new IOException("OAuth token fetch failed: " + e.getError() + " - " + e.getDescription(), e);
             }
         }
         return true;
