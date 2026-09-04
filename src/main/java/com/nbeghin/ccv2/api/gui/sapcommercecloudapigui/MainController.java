@@ -419,22 +419,50 @@ public class MainController extends AbstractController implements Initializable 
         String endpointName = endpoint.getName();
         String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String logScheduled = "[" + LocalDateTime.now().format(fmt) + "] Maintenance scheduled for \"" + endpointName
+                + "\" — start: " + startLdt.format(fmt) + ", end: " + endLdt.format(fmt);
+        App.LOG.info(logScheduled);
+        Platform.runLater(() -> txtAreaConsole.appendText(logScheduled + "\n"));
         maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask enableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, true);
             enableTask.setOnSucceeded(e -> {
-                Platform.runLater(() -> notificationInfo("Maintenance started", "Maintenance mode enabled on " + endpointName));
+                String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode ENABLED on \"" + endpointName + "\"";
+                App.LOG.info(msg);
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(msg + "\n");
+                    notificationInfo("Maintenance started", "Maintenance mode enabled on " + endpointName);
+                });
                 onLoadEndpoints();
             });
-            enableTask.setOnFailed(e -> Platform.runLater(() -> dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage())));
+            enableTask.setOnFailed(e -> {
+                String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to enable maintenance mode on \"" + endpointName + "\": " + enableTask.getException().getMessage();
+                App.LOG.error(msg);
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(msg + "\n");
+                    dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage());
+                });
+            });
             new Thread(enableTask).start();
         }, startMs - nowMs, TimeUnit.MILLISECONDS);
         maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
             disableTask.setOnSucceeded(e -> {
-                Platform.runLater(() -> notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName));
+                String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode DISABLED on \"" + endpointName + "\"";
+                App.LOG.info(msg);
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(msg + "\n");
+                    notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
+                });
                 onLoadEndpoints();
             });
-            disableTask.setOnFailed(e -> Platform.runLater(() -> dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage())));
+            disableTask.setOnFailed(e -> {
+                String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to disable maintenance mode on \"" + endpointName + "\": " + disableTask.getException().getMessage();
+                App.LOG.error(msg);
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(msg + "\n");
+                    dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage());
+                });
+            });
             new Thread(disableTask).start();
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
         dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
