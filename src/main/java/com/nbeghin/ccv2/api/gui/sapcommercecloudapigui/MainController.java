@@ -276,7 +276,7 @@ public class MainController extends AbstractController implements Initializable 
         TableColumn buildCol = new TableColumn("Build");
         buildCol.setCellValueFactory(new PropertyValueFactory<>("buildCode"));
         buildCol.setPrefWidth(90);
-        TableColumn lastNameCol = new TableColumn("DB");
+        TableColumn lastNameCol = new TableColumn("Platform Update");
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("databaseUpdateMode"));
         TableColumn strategyCol = new TableColumn("Strategy");
         strategyCol.setCellValueFactory(new PropertyValueFactory<>("strategy"));
