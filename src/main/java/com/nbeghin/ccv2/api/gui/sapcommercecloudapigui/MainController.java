@@ -309,9 +309,25 @@ public class MainController extends AbstractController implements Initializable 
         urlCol.setCellValueFactory(new PropertyValueFactory<>("url"));
         urlCol.setPrefWidth(180);
         urlCol.setMaxWidth(Double.MAX_VALUE);
-        TableColumn maintenanceCol = new TableColumn("Maintenance");
+        TableColumn<EndpointDetailDTO, Boolean> maintenanceCol = new TableColumn<>("Maintenance");
         maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
         maintenanceCol.setPrefWidth(80);
+        maintenanceCol.setCellFactory(col -> new TableCell<EndpointDetailDTO, Boolean>() {
+            @Override protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(null);
+                if (empty || item == null) { setGraphic(null); return; }
+                if (item) {
+                    javafx.scene.Node icon = fontAwesome.create(FontAwesome.Glyph.WARNING);
+                    icon.setStyle("-fx-fill: #e74c3c;");
+                    setGraphic(icon);
+                } else {
+                    javafx.scene.Node icon = fontAwesome.create(FontAwesome.Glyph.CHECK);
+                    icon.setStyle("-fx-fill: #27ae60;");
+                    setGraphic(icon);
+                }
+            }
+        });
         tableEndpoints.getColumns().addAll(nameCol, urlCol, maintenanceCol);
         tableEndpoints.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableEndpoints.setItems(endpointsList);
