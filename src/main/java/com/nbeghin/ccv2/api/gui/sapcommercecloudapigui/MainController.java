@@ -367,12 +367,25 @@ public class MainController extends AbstractController implements Initializable 
             boolean selected = newValue != null;
             btnShowEndpointDetails.setDisable(!selected);
             btnScheduleMaintenance.setDisable(!selected);
-            datePickerMaintenanceStart.setDisable(!selected);
-            spinnerMaintenanceHour.setDisable(!selected);
-            spinnerMaintenanceMinute.setDisable(!selected);
-            datePickerMaintenanceEnd.setDisable(!selected);
-            spinnerMaintenanceEndHour.setDisable(!selected);
-            spinnerMaintenanceEndMinute.setDisable(!selected);
+            if (selected) {
+                EndpointDetailDTO ep = (EndpointDetailDTO) newValue;
+                boolean inMaintenance = Boolean.TRUE.equals(ep.isMaintenanceMode());
+                datePickerMaintenanceStart.setDisable(inMaintenance);
+                spinnerMaintenanceHour.setDisable(inMaintenance);
+                spinnerMaintenanceMinute.setDisable(inMaintenance);
+                datePickerMaintenanceEnd.setDisable(inMaintenance);
+                spinnerMaintenanceEndHour.setDisable(inMaintenance);
+                spinnerMaintenanceEndMinute.setDisable(inMaintenance);
+                btnScheduleMaintenance.setText(inMaintenance ? "Disable maintenance mode" : "Schedule maintenance mode");
+            } else {
+                datePickerMaintenanceStart.setDisable(true);
+                spinnerMaintenanceHour.setDisable(true);
+                spinnerMaintenanceMinute.setDisable(true);
+                datePickerMaintenanceEnd.setDisable(true);
+                spinnerMaintenanceEndHour.setDisable(true);
+                spinnerMaintenanceEndMinute.setDisable(true);
+                btnScheduleMaintenance.setText("Schedule maintenance mode");
+            }
         });
     }
 
@@ -413,6 +426,36 @@ public class MainController extends AbstractController implements Initializable 
             App.LOG.info(msg);
             txtAreaConsole.appendText(msg + "\n");
             btnScheduleMaintenance.setText("Schedule maintenance mode");
+            return;
+        }
+        if ("Disable maintenance mode".equals(btnScheduleMaintenance.getText())) {
+            EndpointDetailDTO endpoint = (EndpointDetailDTO) tableEndpoints.getSelectionModel().getSelectedItem();
+            String endpointCode = endpoint.getCode();
+            String endpointName = endpoint.getName();
+            String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            String startMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to disable maintenance mode on \"" + endpointName + "\"...";
+            App.LOG.info(startMsg);
+            txtAreaConsole.appendText(startMsg + "\n");
+            EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
+            disableTask.setOnSucceeded(e -> {
+                String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode DISABLED on \"" + endpointName + "\"";
+                App.LOG.info(msg);
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(msg + "\n");
+                    notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
+                    onLoadEndpoints();
+                });
+            });
+            disableTask.setOnFailed(e -> {
+                String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to disable maintenance mode on \"" + endpointName + "\": " + disableTask.getException().getMessage();
+                App.LOG.error(msg);
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(msg + "\n");
+                    dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage());
+                });
+            });
+            AbstractTask.startDaemon(disableTask);
             return;
         }
         if (tableEndpoints.getSelectionModel().getSelectedIndex() == -1) {
