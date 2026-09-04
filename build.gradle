@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.nbeghin.ccv2.api.gui'
-version '1.0.8'
+version '1.0.9'
 
 repositories {
     mavenCentral()
@@ -28,12 +28,19 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Version': project.version
+    }
+}
+
 application {
     mainClass = 'com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App'
 }
 
 run {
     jvmArgs = ['--add-exports=javafx.base/com.sun.javafx.event=ALL-UNNAMED']
+    systemProperty 'app.version', project.version
 }
 task packageAppForLinux(type: io.github.fvarrui.javapackager.gradle.PackageTask, dependsOn: build) {
     platform = "linux"
