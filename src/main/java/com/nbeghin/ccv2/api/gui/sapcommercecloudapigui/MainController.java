@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -48,7 +49,20 @@ public class MainController extends AbstractController implements Initializable 
     private static final ObservableList<String> gitBranches = FXCollections.observableArrayList("develop", "master", "production");
     private static final ObservableList<CreateDeploymentRequestDTO.DatabaseUpdateModeEnum> deploymentDatabaseUpdateModes = FXCollections.observableArrayList(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.values());
     private static final ObservableList<CreateDeploymentRequestDTO.StrategyEnum> deploymentStrategies = FXCollections.observableArrayList(CreateDeploymentRequestDTO.StrategyEnum.values());
+    private final ObservableList<ScheduledMaintenanceEntry> scheduledMaintenances = FXCollections.observableArrayList();
     private final ScheduledExecutorService maintenanceScheduler = Executors.newSingleThreadScheduledExecutor();
+
+    static class ScheduledMaintenanceEntry {
+        final String label;
+        final ScheduledFuture<?> enableFuture;
+        final ScheduledFuture<?> disableFuture;
+        ScheduledMaintenanceEntry(String label, ScheduledFuture<?> enableFuture, ScheduledFuture<?> disableFuture) {
+            this.label = label;
+            this.enableFuture = enableFuture;
+            this.disableFuture = disableFuture;
+        }
+        @Override public String toString() { return label; }
+    }
     private static Stage primaryStage;
     @FXML
     public TabPane tabPane;
@@ -108,6 +122,8 @@ public class MainController extends AbstractController implements Initializable 
     private Button btnRefreshEndpoints;
     @FXML
     private Button btnShowEndpointDetails;
+    @FXML
+    private ListView<ScheduledMaintenanceEntry> listScheduledMaintenances;
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -143,6 +159,7 @@ public class MainController extends AbstractController implements Initializable 
         spinnerMaintenanceEndMinute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, startDefault.getMinute()));
         datePickerMaintenanceStart.setValue(startDefault.toLocalDate());
         datePickerMaintenanceEnd.setValue(startDefault.toLocalDate());
+        initializeScheduledMaintenancesList();
         txtBuildCode.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !StringUtils.isEmpty(newValue)) {
                 if (comboEnvironments.getSelectionModel().getSelectedIndex() != -1) {
@@ -423,7 +440,8 @@ public class MainController extends AbstractController implements Initializable 
                 + "\" — start: " + startLdt.format(fmt) + ", end: " + endLdt.format(fmt);
         App.LOG.info(logScheduled);
         Platform.runLater(() -> txtAreaConsole.appendText(logScheduled + "\n"));
-        maintenanceScheduler.schedule(() -> {
+        ScheduledFuture<?>[] futures = new ScheduledFuture<?>[2];
+        futures[0] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask enableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, true);
             enableTask.setOnSucceeded(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode ENABLED on \"" + endpointName + "\"";
@@ -444,7 +462,7 @@ public class MainController extends AbstractController implements Initializable 
             });
             new Thread(enableTask).start();
         }, startMs - nowMs, TimeUnit.MILLISECONDS);
-        maintenanceScheduler.schedule(() -> {
+        futures[1] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
             disableTask.setOnSucceeded(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode DISABLED on \"" + endpointName + "\"";
@@ -454,6 +472,7 @@ public class MainController extends AbstractController implements Initializable 
                     notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
                 });
                 onLoadEndpoints();
+                Platform.runLater(() -> scheduledMaintenances.removeIf(en -> en.enableFuture == futures[0]));
             });
             disableTask.setOnFailed(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to disable maintenance mode on \"" + endpointName + "\": " + disableTask.getException().getMessage();
@@ -461,15 +480,56 @@ public class MainController extends AbstractController implements Initializable 
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage());
+                    scheduledMaintenances.removeIf(en -> en.enableFuture == futures[0]);
                 });
             });
             new Thread(disableTask).start();
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
+        String entryLabel = endpointName + "  " + startLdt.format(fmt) + " → " + endLdt.format(fmt);
+        Platform.runLater(() -> scheduledMaintenances.add(new ScheduledMaintenanceEntry(entryLabel, futures[0], futures[1])));
         dialogMaintenanceConfirm(endpointName, startLdt.format(fmt), endLdt.format(fmt));
     }
 
     public void shutdownScheduler() {
         maintenanceScheduler.shutdownNow();
+    }
+
+    private void initializeScheduledMaintenancesList() {
+        listScheduledMaintenances.setItems(scheduledMaintenances);
+        listScheduledMaintenances.setVisible(false);
+        listScheduledMaintenances.setManaged(false);
+        scheduledMaintenances.addListener((javafx.collections.ListChangeListener<ScheduledMaintenanceEntry>) c -> {
+            boolean hasItems = !scheduledMaintenances.isEmpty();
+            listScheduledMaintenances.setVisible(hasItems);
+            listScheduledMaintenances.setManaged(hasItems);
+        });
+        listScheduledMaintenances.setCellFactory(lv -> new javafx.scene.control.ListCell<ScheduledMaintenanceEntry>() {
+            private final Button cancelBtn = new Button("✕");
+            private final javafx.scene.control.Label lbl = new javafx.scene.control.Label();
+            private final javafx.scene.layout.HBox row = new javafx.scene.layout.HBox(8, lbl, new javafx.scene.layout.Pane(), cancelBtn);
+            {
+                javafx.scene.layout.HBox.setHgrow(row.getChildren().get(1), javafx.scene.layout.Priority.ALWAYS);
+                cancelBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 10; -fx-padding: 2 6 2 6;");
+                cancelBtn.setOnAction(e -> {
+                    ScheduledMaintenanceEntry entry = getItem();
+                    if (entry != null) {
+                        entry.enableFuture.cancel(false);
+                        entry.disableFuture.cancel(false);
+                        String msg = "[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "] Maintenance cancelled for \"" + entry.label.split(" ")[0] + "\"";
+                        App.LOG.info(msg);
+                        Platform.runLater(() -> txtAreaConsole.appendText(msg + "\n"));
+                        scheduledMaintenances.remove(entry);
+                    }
+                });
+            }
+            @Override protected void updateItem(ScheduledMaintenanceEntry item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setGraphic(null); setText(null); return; }
+                lbl.setText(item.label);
+                setGraphic(row);
+                setText(null);
+            }
+        });
     }
 
     private static final org.threeten.bp.format.DateTimeFormatter DT_FMT =

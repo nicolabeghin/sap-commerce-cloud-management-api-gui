@@ -145,6 +145,11 @@
                 </Tab>
             </TabPane>
 
+            <ListView fx:id="listScheduledMaintenances" maxHeight="80"
+                      style="-fx-background-color: #fff3cd; -fx-border-color: #f0ad4e; -fx-border-radius: 4;">
+                <placeholder><Label text="No scheduled maintenances"/></placeholder>
+            </ListView>
+
             <ProgressBar fx:id="mainProgressBar" maxWidth="Infinity" progress="Infinity"/>
             <TextArea fx:id="txtAreaConsole" maxHeight="60" editable="false"/>
 
