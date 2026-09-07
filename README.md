@@ -31,7 +31,8 @@ this is where `sap-commerce-cloud-management-api-gui` comes into play.
 ### Existing builds
 * **Double-click** any row to see full build details (version, timestamps, branch, created by, etc.)
 
-<img width="480" alt="3" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/0f256603-384a-4c91-9106-3fb97f003deb">
+<img width="620" height="528" alt="image" src="https://github.com/user-attachments/assets/7f0e9662-5199-4b75-9e44-4ed017c3beeb" />
+
 
 ### New build
 * Trigger a build from a Git branch or tag, with an optional auto-suggested build name
@@ -43,7 +44,7 @@ this is where `sap-commerce-cloud-management-api-gui` comes into play.
 * Deploy with configurable strategy and DB update mode
 * **Double-click** any row to see full deployment details
 
-<img width="480" alt="2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/c834d0fe-1094-4363-8bab-bf0c213a2e1f">
+<img width="620" height="528" alt="image" src="https://github.com/user-attachments/assets/92c88d1e-80b0-473c-9f8b-9ff5aa01f415" />
 
 ### Endpoints
 * View all endpoints for the selected environment, including their current maintenance state
@@ -51,12 +52,17 @@ this is where `sap-commerce-cloud-management-api-gui` comes into play.
 * **Disable maintenance mode** immediately for endpoints currently in maintenance
 * Cancel a pending maintenance schedule at any time
 
+<img width="620" height="528" alt="image" src="https://github.com/user-attachments/assets/33891b2a-6c00-48d8-8160-fc9f571d2cc2" />
+<img width="620" height="528" alt="image" src="https://github.com/user-attachments/assets/851b7804-fa66-4f9f-967b-551684abd84d" />
+
+
 ## Credentials
 At first start you'll be prompted for
 * **Client ID** and **Client secret**: OAuth2 credentials — see [Creating a Technical User](https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/0c2050f6d31f49ddb6eba18509060ae5/57bef96f18034193af93d2cc36f6d526.html?locale=en-US&version=LATEST).
 * **Subscription code**: found in the Cloud Portal URL after `subscription/`
 
-<img width="338" alt="8_2" src="https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/assets/2743637/3c8092d7-4871-49d4-966e-4a2f5d8c7669">
+<img width="620" height="528" alt="image" src="https://github.com/user-attachments/assets/2bec80c7-a0c9-413b-a088-fab471ad5efa" />
+
 
 ## Requirements
 * Java 8 or higher
