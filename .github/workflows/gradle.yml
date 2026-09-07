@@ -42,6 +42,14 @@ jobs:
         if-no-files-found: error
         path: build/*.tar.gz
 
+    # The runnable (fat) JAR is platform-independent and produced by every
+    # packageAppFor* task, so we collect it once from the Linux build.
+    - uses: actions/upload-artifact@v4
+      with:
+        name: runnable-jar
+        if-no-files-found: error
+        path: build/*-runnable.jar
+
   build-osx:
     runs-on: macos-latest
     permissions:
@@ -108,6 +116,7 @@ jobs:
             windows/*.zip
             mac/*.tar.gz
             linux/*.tar.gz
+            runnable-jar/*-runnable.jar
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
