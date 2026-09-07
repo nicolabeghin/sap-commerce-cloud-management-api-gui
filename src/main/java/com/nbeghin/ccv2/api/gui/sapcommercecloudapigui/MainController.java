@@ -55,8 +55,24 @@ public class MainController extends AbstractController implements Initializable 
         t.setDaemon(true);
         return t;
     });
-    private ScheduledFuture<?> activeEnableFuture;
-    private ScheduledFuture<?> activeDisableFuture;
+    private ScheduledFuture<?>[] pendingFor(String endpointCode) {
+        return scheduledMaintenance.computeIfAbsent(endpointCode, k -> new ScheduledFuture<?>[2]);
+    }
+
+    // Pending maintenance windows keyed by endpoint code. Each entry holds the
+    // [enableFuture, disableFuture] pair so a window can be cancelled per endpoint
+    // even after the user selects a different endpoint.
+    private final java.util.Map<String, ScheduledFuture<?>[]> scheduledMaintenance = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private boolean hasPendingSchedule(String endpointCode) {
+        ScheduledFuture<?>[] futures = scheduledMaintenance.get(endpointCode);
+        if (futures == null) return false;
+        boolean pending = (futures[0] != null && !futures[0].isDone()) || (futures[1] != null && !futures[1].isDone());
+        if (!pending) {
+            scheduledMaintenance.remove(endpointCode);
+        }
+        return pending;
+    }
     private static Stage primaryStage;
     @FXML
     public TabPane tabPane;
@@ -376,13 +392,19 @@ public class MainController extends AbstractController implements Initializable 
             if (selected) {
                 EndpointDetailDTO ep = (EndpointDetailDTO) newValue;
                 boolean inMaintenance = Boolean.TRUE.equals(ep.isMaintenanceMode());
-                datePickerMaintenanceStart.setDisable(inMaintenance);
-                spinnerMaintenanceHour.setDisable(inMaintenance);
-                spinnerMaintenanceMinute.setDisable(inMaintenance);
-                datePickerMaintenanceEnd.setDisable(inMaintenance);
-                spinnerMaintenanceEndHour.setDisable(inMaintenance);
-                spinnerMaintenanceEndMinute.setDisable(inMaintenance);
-                setMaintenanceButtonState(inMaintenance ? "Disable maintenance mode" : "Schedule maintenance mode");
+                boolean pending = hasPendingSchedule(ep.getCode());
+                boolean lockInputs = inMaintenance || pending;
+                datePickerMaintenanceStart.setDisable(lockInputs);
+                spinnerMaintenanceHour.setDisable(lockInputs);
+                spinnerMaintenanceMinute.setDisable(lockInputs);
+                datePickerMaintenanceEnd.setDisable(lockInputs);
+                spinnerMaintenanceEndHour.setDisable(lockInputs);
+                spinnerMaintenanceEndMinute.setDisable(lockInputs);
+                if (pending) {
+                    setMaintenanceButtonState("Cancel maintenance mode");
+                } else {
+                    setMaintenanceButtonState(inMaintenance ? "Disable maintenance mode" : "Schedule maintenance mode");
+                }
             } else {
                 datePickerMaintenanceStart.setDisable(true);
                 spinnerMaintenanceHour.setDisable(true);
@@ -436,12 +458,25 @@ public class MainController extends AbstractController implements Initializable 
 
     public void onScheduleMaintenance(ActionEvent actionEvent) {
         if ("Cancel maintenance mode".equals(btnScheduleMaintenance.getText())) {
-            if (activeEnableFuture != null) activeEnableFuture.cancel(false);
-            if (activeDisableFuture != null) activeDisableFuture.cancel(false);
+            EndpointDetailDTO selectedEndpoint = (EndpointDetailDTO) tableEndpoints.getSelectionModel().getSelectedItem();
+            if (selectedEndpoint == null) {
+                return;
+            }
+            ScheduledFuture<?>[] futures = scheduledMaintenance.remove(selectedEndpoint.getCode());
+            if (futures != null) {
+                if (futures[0] != null) futures[0].cancel(false);
+                if (futures[1] != null) futures[1].cancel(false);
+            }
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode cancelled";
+            String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode cancelled for \"" + selectedEndpoint.getName() + "\"";
             App.LOG.info(msg);
             txtAreaConsole.appendText(msg + "\n");
+            datePickerMaintenanceStart.setDisable(false);
+            spinnerMaintenanceHour.setDisable(false);
+            spinnerMaintenanceMinute.setDisable(false);
+            datePickerMaintenanceEnd.setDisable(false);
+            spinnerMaintenanceEndHour.setDisable(false);
+            spinnerMaintenanceEndMinute.setDisable(false);
             setMaintenanceButtonState("Schedule maintenance mode");
             return;
         }
@@ -513,7 +548,8 @@ public class MainController extends AbstractController implements Initializable 
                 + "\" — start: " + startLdt.format(fmt) + ", end: " + endLdt.format(fmt);
         App.LOG.info(logScheduled);
         txtAreaConsole.appendText(logScheduled + "\n");
-        activeEnableFuture = maintenanceScheduler.schedule(() -> {
+        ScheduledFuture<?>[] futures = pendingFor(endpointCode);
+        futures[0] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask enableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, true);
             enableTask.setOnSucceeded(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode ENABLED on \"" + endpointName + "\"";
@@ -527,11 +563,13 @@ public class MainController extends AbstractController implements Initializable 
             enableTask.setOnFailed(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to enable maintenance mode on \"" + endpointName + "\": " + enableTask.getException().getMessage();
                 App.LOG.error(msg);
-                if (activeDisableFuture != null) activeDisableFuture.cancel(false);
+                // Enable never happened, so the paired disable is pointless — cancel it and clear the window.
+                ScheduledFuture<?>[] pending = scheduledMaintenance.remove(endpointCode);
+                if (pending != null && pending[1] != null) pending[1].cancel(false);
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     dialogError("Failed to enable maintenance mode: " + enableTask.getException().getMessage());
-                    setMaintenanceButtonState("Schedule maintenance mode");
+                    onLoadEndpoints();
                 });
             });
             String startMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to enable maintenance mode on \"" + endpointName + "\"...";
@@ -539,25 +577,29 @@ public class MainController extends AbstractController implements Initializable 
             Platform.runLater(() -> txtAreaConsole.appendText(startMsg + "\n"));
             AbstractTask.startDaemon(enableTask);
         }, startMs - nowMs, TimeUnit.MILLISECONDS);
-        activeDisableFuture = maintenanceScheduler.schedule(() -> {
+        futures[1] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
             disableTask.setOnSucceeded(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Maintenance mode DISABLED on \"" + endpointName + "\"";
                 App.LOG.info(msg);
+                scheduledMaintenance.remove(endpointCode);
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
                     notificationInfo("Maintenance ended", "Maintenance mode disabled on " + endpointName);
                     onLoadEndpoints();
-                    setMaintenanceButtonState("Schedule maintenance mode");
                 });
             });
             disableTask.setOnFailed(e -> {
                 String msg = "[" + LocalDateTime.now().format(fmt) + "] Failed to disable maintenance mode on \"" + endpointName + "\": " + disableTask.getException().getMessage();
                 App.LOG.error(msg);
+                // Enable succeeded but disable failed: the endpoint is stuck in maintenance.
+                // Clear the window and refresh so the user can retry via the "Disable" button.
+                scheduledMaintenance.remove(endpointCode);
                 Platform.runLater(() -> {
                     txtAreaConsole.appendText(msg + "\n");
-                    dialogError("Failed to disable maintenance mode: " + disableTask.getException().getMessage());
-                    setMaintenanceButtonState("Schedule maintenance mode");
+                    dialogError("Failed to disable maintenance mode — endpoint \"" + endpointName + "\" is still in maintenance. "
+                            + "Select it and use \"Disable maintenance mode\" to retry.\n\n" + disableTask.getException().getMessage());
+                    onLoadEndpoints();
                 });
             });
             String endMsg = "[" + LocalDateTime.now().format(fmt) + "] Calling API to disable maintenance mode on \"" + endpointName + "\"...";
@@ -565,6 +607,12 @@ public class MainController extends AbstractController implements Initializable 
             Platform.runLater(() -> txtAreaConsole.appendText(endMsg + "\n"));
             AbstractTask.startDaemon(disableTask);
         }, endMs - nowMs, TimeUnit.MILLISECONDS);
+        datePickerMaintenanceStart.setDisable(true);
+        spinnerMaintenanceHour.setDisable(true);
+        spinnerMaintenanceMinute.setDisable(true);
+        datePickerMaintenanceEnd.setDisable(true);
+        spinnerMaintenanceEndHour.setDisable(true);
+        spinnerMaintenanceEndMinute.setDisable(true);
         setMaintenanceButtonState("Cancel maintenance mode");
     }
 
