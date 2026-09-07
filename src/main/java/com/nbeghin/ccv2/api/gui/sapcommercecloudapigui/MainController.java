@@ -164,6 +164,9 @@ public class MainController extends AbstractController implements Initializable 
                     checkboxDeployAfterBuild.setDisable(false);
                     btnStartBuild.setDisable(false);
                 }
+            } else {
+                checkboxDeployAfterBuild.setDisable(true);
+                btnStartBuild.setDisable(true);
             }
         });
         tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -433,7 +436,7 @@ public class MainController extends AbstractController implements Initializable 
         String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
         EndpointListTask task = new EndpointListTask(environmentCode);
         task.setOnSucceeded(event -> {
-            mainProgressBar.setProgress(100);
+            mainProgressBar.setProgress(1.0);
             tableEndpoints.setDisable(false);
             endpointsList.clear();
             if (task.getValue() != null && task.getValue().getValue() != null) {
@@ -754,7 +757,7 @@ public class MainController extends AbstractController implements Initializable 
     private void onLoadLatestBuilds() {
         BuildListTask task = new BuildListTask();
         task.setOnSucceeded(event -> {
-            mainProgressBar.setProgress(100);
+            mainProgressBar.setProgress(1.0);
             tableBuilds.setDisable(false);
             buildsList.clear();
             if (task.getValue() != null && task.getValue().getValue() != null) {
@@ -778,7 +781,7 @@ public class MainController extends AbstractController implements Initializable 
         }
         DeploymentListTask task = new DeploymentListTask(((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode());
         task.setOnSucceeded(event -> {
-            mainProgressBar.setProgress(100);
+            mainProgressBar.setProgress(1.0);
             tableDeployments.setDisable(false);
             deploymentsList.clear();
             if (task.getValue() != null && task.getValue().getValue() != null) {
