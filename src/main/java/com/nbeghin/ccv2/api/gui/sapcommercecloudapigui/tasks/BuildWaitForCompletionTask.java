@@ -97,7 +97,7 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         } else {
             String buildStatus = currentProgress.getBuildStatus();
             if (!"DELETED".equals(buildStatus) && !"FAIL".equals(buildStatus)) {
-                if (waitTime > Integer.parseInt(timeout) * '\uea60') {
+                if (waitTime > Integer.parseInt(timeout) * 60000L) {
                     updateMessage("Build has not completed in " + Integer.parseInt(timeout) + " minutes, canceling the wait.");
                     return true;
                 } else {

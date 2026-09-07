@@ -131,7 +131,7 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
     }
 
     private boolean passWaitLimit(int waitTime, String deploymentCode, String timeout) {
-        if (waitTime > Integer.parseInt(timeout) * '\uea60') {
+        if (waitTime > Integer.parseInt(timeout) * 60000L) {
             updateMessage("This deployment with code '" + deploymentCode + "' has not completed in " + waitTime + "ms, see deployment log for details.");
             return true;
         } else {
