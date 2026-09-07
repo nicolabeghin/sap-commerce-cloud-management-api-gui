@@ -686,6 +686,7 @@ public class MainController extends AbstractController implements Initializable 
                 checksForDeploymentSettings();
             } catch (Exception e) {
                 dialogError(e.getMessage());
+                return;
             }
         }
         CreateBuildRequestDTO createBuildRequestDTO = new CreateBuildRequestDTO();
