@@ -88,7 +88,14 @@ public abstract class AbstractController {
     }
 
     private void osxNotification(String title, String content) throws IOException {
-        Runtime.getRuntime().exec(new String[]{"osascript", "-e", "display notification \"" + content + "\" with title \"" + title + "\" sound name \"Frog\""});
+        String script = "display notification \"" + escapeAppleScript(content)
+                + "\" with title \"" + escapeAppleScript(title) + "\" sound name \"Frog\"";
+        Runtime.getRuntime().exec(new String[]{"osascript", "-e", script});
+    }
+
+    private static String escapeAppleScript(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private void dialogInfo(String header, String content) {
