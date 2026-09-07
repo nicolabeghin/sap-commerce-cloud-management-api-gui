@@ -38,7 +38,7 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
      * @throws Exception
      */
     public boolean waitCompletion(String deploymentCode, int pollInterval, String timeout) throws Exception {
-        this.waitForStart(deploymentCode, pollInterval);
+        this.waitForStart(deploymentCode, pollInterval, timeout);
         DeploymentProgressDTO previousProgress = null;
         updateMessage("Waiting for the deployment with code '" + deploymentCode + "' to complete.");
         boolean[] failed = new boolean[]{false};
@@ -79,8 +79,10 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         return failed[0];
     }
 
-    private void waitForStart(String deploymentCode, int pollInterval) throws Exception {
+    private void waitForStart(String deploymentCode, int pollInterval, String timeout) throws Exception {
         String previousStatus = null;
+        long timeoutMs = (long) Integer.parseInt(timeout) * 60000L;
+        int waitTime = 0;
 
         while (true) {
             String currentStatus = execute(getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, deploymentCode)).getStatus();
@@ -93,6 +95,12 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
             }
 
             previousStatus = currentStatus;
+
+            waitTime += pollInterval;
+            if (waitTime > timeoutMs) {
+                throw new InterruptedException("Deployment '" + deploymentCode + "' did not start within " + timeout + " minutes, canceling the wait.");
+            }
+
             Thread.sleep(pollInterval);
         }
     }

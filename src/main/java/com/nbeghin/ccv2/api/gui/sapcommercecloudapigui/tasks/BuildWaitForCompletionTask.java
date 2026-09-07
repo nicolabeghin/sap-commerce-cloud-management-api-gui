@@ -27,7 +27,7 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
 
     public BuildProgressDTO waitCompletion(String buildCode, int pollInterval, String timeout) throws InterruptedException, IOException {
         LOG.info("Starting wait for build completion " + buildCode);
-        this.waitForStart(buildCode, pollInterval);
+        this.waitForStart(buildCode, pollInterval, timeout);
         BuildProgressDTO previousProgress = null;
         updateMessage("Waiting for the build with code '" + buildCode + "' to complete.");
         int waitTime = 0;
@@ -61,9 +61,11 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         }
     }
 
-    private void waitForStart(String buildCode, int pollInterval) throws InterruptedException, IOException {
+    private void waitForStart(String buildCode, int pollInterval, String timeout) throws InterruptedException, IOException {
         LOG.info("Starting wait for build start " + buildCode);
         String previousStatus = null;
+        long timeoutMs = (long) Integer.parseInt(timeout) * 60000L;
+        int waitTime = 0;
 
         while (true) {
             String currentStatus = execute(getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, buildCode)).getStatus();
@@ -76,6 +78,11 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
             }
 
             previousStatus = currentStatus;
+
+            waitTime += pollInterval;
+            if (waitTime > timeoutMs) {
+                throw new InterruptedException("Build '" + buildCode + "' did not start within " + timeout + " minutes, canceling the wait.");
+            }
 
             Thread.sleep(pollInterval);
 
