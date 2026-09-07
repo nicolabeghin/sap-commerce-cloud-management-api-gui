@@ -2,6 +2,10 @@ package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils;
 
 import org.apache.commons.lang3.SystemUtils;
 
+/**
+ * OS detection helpers used to branch platform-specific behaviour (e.g. native
+ * macOS notifications vs. the ControlsFX fallback elsewhere).
+ */
 public class SystemCommons {
 
     public static OS getOS() {

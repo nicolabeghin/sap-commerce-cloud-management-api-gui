@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Enables or disables maintenance mode on a single endpoint via a partial endpoint update. */
 public class EndpointSetMaintenanceModeTask extends AbstractTask<EndpointDTO> {
 
     private final String environmentCode;

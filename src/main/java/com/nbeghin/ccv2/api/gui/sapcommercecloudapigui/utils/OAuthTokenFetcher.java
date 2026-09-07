@@ -9,13 +9,24 @@ import okhttp3.Response;
 
 import java.io.IOException;
 
+/**
+ * Fetches an OAuth2 bearer token from the SAP ID service via the client-credentials
+ * grant. The token is used to authenticate Management API calls (see
+ * {@code AbstractTask}, which caches one token per task instance).
+ */
 public class OAuthTokenFetcher {
 
     private static final String TOKEN_URL = "https://ycloud.accounts.ondemand.com/oauth2/token";
+    // Identifies the API this token is requested for; required by the SAP token endpoint.
     private static final String RESOURCE = "urn:sap:identity:application:provider:name:cp-dependency";
 
     private static final OkHttpClient client = new OkHttpClient();
 
+    /**
+     * Performs the client-credentials token request and returns the {@code access_token}.
+     *
+     * @throws IOException on a non-2xx response or a body missing {@code access_token}
+     */
     public static String fetchBearerToken(String clientId, String clientSecret) throws IOException {
         Request request = new Request.Builder()
                 .url(TOKEN_URL)

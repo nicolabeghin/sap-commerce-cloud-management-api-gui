@@ -13,6 +13,11 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * JavaFX lifecycle owner. Loads {@code main.fxml}, wires the {@link MainController}
+ * to the primary stage, and intercepts window close to warn about (and clean up)
+ * any in-memory maintenance windows still pending.
+ */
 public class JavaFXApplication extends Application {
     public static void main(String[] args) {
         launch();
@@ -25,6 +30,9 @@ public class JavaFXApplication extends Application {
         MainController controller = loader.getController();
         controller.setPrimaryStage(stage);
         stage.setOnCloseRequest(event -> {
+            // Scheduled maintenance windows live only in this process. If any are
+            // still pending, give the user a chance to cancel the quit so the
+            // enable/disable API calls aren't silently dropped.
             if (controller.hasPendingMaintenance()) {
                 Alert alert = new Alert(Alert.AlertType.WARNING,
                         "One or more scheduled maintenance windows are still pending. "

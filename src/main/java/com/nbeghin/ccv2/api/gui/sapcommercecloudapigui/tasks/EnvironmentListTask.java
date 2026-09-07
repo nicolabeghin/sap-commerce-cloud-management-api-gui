@@ -5,6 +5,7 @@ import com.sap.cx.commercecloud.management.openapi.model.EnvironmentDetailsDTO;
 
 import java.io.IOException;
 
+/** Fetches the subscription's available environments (populates the environment picker). */
 public class EnvironmentListTask extends AbstractTask<EnvironmentDetailsDTO> {
 
     public EnvironmentListTask() {

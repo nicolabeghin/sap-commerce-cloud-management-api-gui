@@ -6,6 +6,7 @@ import com.sap.cx.commercecloud.management.openapi.model.DeploymentDetailDTO;
 import java.io.IOException;
 
 
+/** Fetches full details for a single deployment by its code. */
 public class DeploymentDetailTask extends AbstractTask<DeploymentDetailDTO> {
 
     private final String deploymentCode;

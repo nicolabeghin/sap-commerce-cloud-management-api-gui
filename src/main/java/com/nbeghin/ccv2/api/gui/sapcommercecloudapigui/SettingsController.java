@@ -15,6 +15,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the settings dialog ({@code settings.fxml}). Edits the subscription
+ * code and OAuth2 client credentials, plus the debug-logging toggle, and persists them
+ * (via {@link App} preferences) into {@link Constants} on save.
+ */
 public class SettingsController extends AbstractController implements Initializable {
 
     @FXML
@@ -40,6 +45,9 @@ public class SettingsController extends AbstractController implements Initializa
         btnInfoClientCredentials.setGraphic(fontAwesome.create(org.controlsfx.glyphfont.FontAwesome.Glyph.INFO));
     }
 
+    // Validate all three credentials are present, push them into Constants, persist,
+    // then close the dialog. Note: because preferences are namespaced under the
+    // subscription code, the subscription must be set before the other keys make sense.
     public void onSaveSettings(ActionEvent actionEvent) {
         if (StringUtils.isBlank(txtSubscriptionCode.getText())) {
             dialogError("Missing CCV2 subscription code");

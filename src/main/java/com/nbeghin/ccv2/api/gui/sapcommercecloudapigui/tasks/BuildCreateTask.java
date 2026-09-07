@@ -7,6 +7,7 @@ import com.sap.cx.commercecloud.management.openapi.model.CreateBuildResponseDTO;
 import java.io.IOException;
 
 
+/** Triggers a new build for the given branch/name and returns the created build's code. */
 public class BuildCreateTask extends AbstractTask<CreateBuildResponseDTO> {
 
     private final CreateBuildRequestDTO createBuildRequestDTO;

@@ -8,6 +8,11 @@ import java.io.IOException;
 import static com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App.LOG;
 
 
+/**
+ * Polls a build until it reaches a terminal state. First waits for the build to leave
+ * {@code UNKNOWN}/{@code SCHEDULED} ({@link #waitForStart}), then polls its progress,
+ * relaying started tasks and percentage to the UI, until it succeeds, fails, or times out.
+ */
 public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -22,9 +27,13 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         updateTitle("Build progress");
         updateProgress(0, 100);
         updateMessage("Waiting for build completion...");
+        // pollInterval in ms, timeout in minutes.
         return waitCompletion(buildCode, 4200, "120");
     }
 
+    // Poll build progress every pollInterval ms until SUCCESS, or a failure/timeout is
+    // detected by checkError. Only forward newly-started tasks and rising percentages to
+    // the UI to avoid duplicate/backwards updates.
     public BuildProgressDTO waitCompletion(String buildCode, int pollInterval, String timeout) throws InterruptedException, IOException {
         LOG.info("Starting wait for build completion " + buildCode);
         this.waitForStart(buildCode, pollInterval, timeout);

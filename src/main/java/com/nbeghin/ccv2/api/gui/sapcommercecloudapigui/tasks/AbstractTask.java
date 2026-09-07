@@ -17,6 +17,15 @@ import javafx.concurrent.Task;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Base class for every Management API call. Each task builds its own {@link ApiClient}
+ * (with OkHttp timeouts, an auth-header interceptor, and optional debug logging) and the
+ * Retrofit service interfaces. Subclasses implement {@link Task#call()} and use the
+ * {@code get*Api()} accessors plus {@link #execute(Call)} to invoke the API.
+ *
+ * <p>Tasks run on daemon threads (see {@link #startDaemon}) so blocking API/poll calls
+ * never freeze the JavaFX application thread.
+ */
 public abstract class AbstractTask<T> extends Task<T> {
 
     private final ApiClient apiClient;
@@ -54,6 +63,8 @@ public abstract class AbstractTask<T> extends Task<T> {
 
     private volatile String token;
 
+    // Double-checked locking: fetch the OAuth token at most once per task, lazily on
+    // the first API call (off the FX thread). See the constructor comment for why.
     private String getToken() throws IOException {
         String t = token;
         if (t == null) {
@@ -96,6 +107,8 @@ public abstract class AbstractTask<T> extends Task<T> {
         t.start();
     }
 
+    // Unwrap a Retrofit response: return the body on 2xx, otherwise throw an IOException
+    // carrying the status and error body (401 gets a hint that the token likely expired).
     protected <R> R execute(Call<R> call) throws IOException {
         Response<R> response = call.execute();
         if (!response.isSuccessful()) {

@@ -7,6 +7,7 @@ import com.sap.cx.commercecloud.management.openapi.model.CreateDeploymentRespons
 import java.io.IOException;
 
 
+/** Triggers a deployment (build + environment + strategy) and returns the created deployment's code. */
 public class DeploymentCreateTask extends AbstractTask<CreateDeploymentResponseDTO> {
 
     private final CreateDeploymentRequestDTO createDeploymentRequestDTO;

@@ -29,6 +29,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 
+/**
+ * Base controller shared by all UI controllers. Provides cross-platform toast
+ * notifications (native {@code osascript} on macOS, ControlsFX elsewhere), modal
+ * alert/detail dialogs, the maintenance-confirmation dialog, and browser launching.
+ * Also loads the bundled FontAwesome font once for glyph icons.
+ */
 public abstract class AbstractController {
     public static Stage notificationStage;
     protected static FontAwesome fontAwesome;
@@ -37,6 +43,8 @@ public abstract class AbstractController {
         fontAwesome = new FontAwesome(MainController.class.getClassLoader().getResourceAsStream("fontawesome-free-652.otf"));
     }
 
+    // Notifications are dispatched on the FX thread; macOS uses a native banner
+    // (ControlsFX notifications look out of place there), everything else uses ControlsFX.
     protected void notificationInfo(String title, String content) {
         Platform.runLater(() -> {
             try {
@@ -66,6 +74,8 @@ public abstract class AbstractController {
 
 
     /**
+     * ControlsFX notifications need an owner window; on a headless-ish/no-focused-window
+     * situation they otherwise fail. Lazily create a 1x1 transparent stage to act as owner.
      * @url https://stackoverflow.com/a/26876019/2378095
      */
     private void getOwnerStageForNotification() {
@@ -93,6 +103,8 @@ public abstract class AbstractController {
         Runtime.getRuntime().exec(new String[]{"osascript", "-e", script});
     }
 
+    // Escape backslashes and quotes so user/API-supplied text can't break out of the
+    // AppleScript string literals (or inject additional script).
     private static String escapeAppleScript(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
@@ -128,6 +140,7 @@ public abstract class AbstractController {
         dialogInfo("INFO", content);
     }
 
+    /** Scrollable, read-only detail dialog for long multi-line content (build/deployment/endpoint details). */
     protected void dialogDetails(String title, String content) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -150,6 +163,11 @@ public abstract class AbstractController {
         });
     }
 
+    /**
+     * Confirmation dialog shown before scheduling a maintenance window. Prominently
+     * warns that the app must stay running and awake for the whole window, since it
+     * drives the enable/disable API calls itself (there is no server-side scheduling).
+     */
     protected Optional<ButtonType> dialogMaintenanceConfirm(String endpointName, String start, String end) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Confirm Maintenance Mode");

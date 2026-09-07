@@ -6,6 +6,7 @@ import com.sap.cx.commercecloud.management.openapi.model.BuildDetailsDTO;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/** Fetches the most recent builds (up to {@link Constants#MAX_NUM_BUILDS}, newest first). */
 public class BuildListTask extends AbstractTask<BuildDetailsDTO> {
 
     public BuildListTask() {

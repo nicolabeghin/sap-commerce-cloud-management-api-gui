@@ -5,6 +5,7 @@ import com.sap.cx.commercecloud.management.openapi.model.EndpointDetailsDTO;
 
 import java.io.IOException;
 
+/** Fetches the endpoints of a given environment (used to show/manage maintenance mode). */
 public class EndpointListTask extends AbstractTask<EndpointDetailsDTO> {
 
     private final String environmentCode;

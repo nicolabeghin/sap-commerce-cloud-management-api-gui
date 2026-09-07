@@ -41,19 +41,32 @@ import java.util.Optional;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Primary UI controller backing {@code main.fxml}, covering the Builds, Deployments and
+ * Endpoints tabs. It populates the tables/pickers from API list tasks, persists the user's
+ * selections as preferences, launches the build/deploy progress dialog, and schedules
+ * endpoint maintenance windows.
+ *
+ * <p>All API work runs on background daemon tasks; results are marshalled back onto the FX
+ * thread. Maintenance windows are scheduled in-process only ({@link #maintenanceScheduler})
+ * and are lost if the app exits before they fire — see {@link #hasPendingMaintenance()}.
+ */
 public class MainController extends AbstractController implements Initializable {
     private static final ObservableList<BuildDetailDTO> buildsList = FXCollections.observableArrayList();
     private static final ObservableList<DeploymentDetailDTO> deploymentsList = FXCollections.observableArrayList();
     private static final ObservableList<EnvironmentDetailDTO> environmentsList = FXCollections.observableArrayList(); // @TODO
     private static final ObservableList<EndpointDetailDTO> endpointsList = FXCollections.observableArrayList();
+    // Suggestions offered by the Git-branch autocomplete field (the API accepts any branch).
     private static final ObservableList<String> gitBranches = FXCollections.observableArrayList("develop", "master", "production");
     private static final ObservableList<CreateDeploymentRequestDTO.DatabaseUpdateModeEnum> deploymentDatabaseUpdateModes = FXCollections.observableArrayList(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.values());
     private static final ObservableList<CreateDeploymentRequestDTO.StrategyEnum> deploymentStrategies = FXCollections.observableArrayList(CreateDeploymentRequestDTO.StrategyEnum.values());
+    // Single daemon thread that fires the scheduled maintenance enable/disable calls.
     private final ScheduledExecutorService maintenanceScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
         return t;
     });
+    // Returns (creating if needed) the [enableFuture, disableFuture] slot for an endpoint.
     private ScheduledFuture<?>[] pendingFor(String endpointCode) {
         return scheduledMaintenance.computeIfAbsent(endpointCode, k -> new ScheduledFuture<?>[2]);
     }
@@ -63,6 +76,8 @@ public class MainController extends AbstractController implements Initializable 
     // even after the user selects a different endpoint.
     private final java.util.Map<String, ScheduledFuture<?>[]> scheduledMaintenance = new java.util.concurrent.ConcurrentHashMap<>();
 
+    // True if either half of the window is still scheduled. Prunes the map entry when
+    // both futures are done so it doesn't leak completed windows.
     private boolean hasPendingSchedule(String endpointCode) {
         ScheduledFuture<?>[] futures = scheduledMaintenance.get(endpointCode);
         if (futures == null) return false;
@@ -150,6 +165,7 @@ public class MainController extends AbstractController implements Initializable 
         initializeBuildsTable();
         initializeDeploymentsTable();
         initializeEndpointsTable();
+        // Default the maintenance window to one hour from now, lasting one hour.
         java.time.LocalDate today = java.time.LocalDate.now();
         java.time.LocalDateTime startDefault = java.time.LocalDateTime.now().plusHours(1);
         spinnerMaintenanceHour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, startDefault.getHour()));
@@ -158,6 +174,8 @@ public class MainController extends AbstractController implements Initializable 
         spinnerMaintenanceEndMinute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, startDefault.getMinute()));
         datePickerMaintenanceStart.setValue(startDefault.toLocalDate());
         datePickerMaintenanceEnd.setValue(startDefault.toLocalDate());
+        // Enable the build/deploy controls only once both a build code and an environment
+        // are present; clearing the build code disables them again.
         txtBuildCode.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !StringUtils.isEmpty(newValue)) {
                 if (comboEnvironments.getSelectionModel().getSelectedIndex() != -1) {
@@ -170,6 +188,8 @@ public class MainController extends AbstractController implements Initializable 
             }
         });
         tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // Lazy-load a tab's data on first visit, and enable/disable the deployment
+            // controls and the Refresh button according to which tab is active.
             if (newValue != null && newValue != oldValue && "tabDeployments".equals(newValue.getId()) && deploymentsList.isEmpty()) {
                 onLoadLatestDeployments();
             }
@@ -197,6 +217,8 @@ public class MainController extends AbstractController implements Initializable 
         Platform.runLater(this::onLoadLatestBuilds);
     }
 
+    // Persist user selections as they change so they're restored next launch. The change
+    // listeners write through App.savePreference (namespaced by subscription code).
     private void bindPreferences() {
         txtBuildCode.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !StringUtils.isEmpty(newValue)) {
@@ -232,6 +254,8 @@ public class MainController extends AbstractController implements Initializable 
         });
     }
 
+    // Load persisted settings into Constants and the UI. If credentials are missing,
+    // force the settings dialog before anything can call the API.
     private void restorePreferences() {
         Constants.DEBUG_ENABLED = App.getBooleanPreference(Constants.PREFS_DEBUG_ENABLED);
         String subscriptionCode = App.getPreference(Constants.PREFS_SUBSCRIPTION);
@@ -346,6 +370,8 @@ public class MainController extends AbstractController implements Initializable 
         TableColumn nameCol = new TableColumn("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setPrefWidth(120);
+        // Render the URL as a clickable hyperlink that opens in the default browser,
+        // recolouring white when the row is selected so it stays legible.
         TableColumn<EndpointDetailDTO, String> urlCol = new TableColumn<>("URL");
         urlCol.setCellValueFactory(new PropertyValueFactory<>("url"));
         urlCol.setPrefWidth(180);
@@ -367,6 +393,7 @@ public class MainController extends AbstractController implements Initializable 
         TableColumn<EndpointDetailDTO, Boolean> maintenanceCol = new TableColumn<>("Maintenance mode");
         maintenanceCol.setCellValueFactory(new PropertyValueFactory<>("maintenanceMode"));
         maintenanceCol.setPrefWidth(80);
+        // Show a red warning glyph when in maintenance, a green check otherwise.
         maintenanceCol.setCellFactory(col -> new TableCell<EndpointDetailDTO, Boolean>() {
             @Override protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
@@ -389,6 +416,9 @@ public class MainController extends AbstractController implements Initializable 
         tableEndpoints.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableEndpoints.setItems(endpointsList);
         tableEndpoints.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // Drive the maintenance panel from the selected endpoint's state: when it's
+            // already in maintenance or has a pending scheduled window, lock the date/time
+            // inputs and relabel the button (Disable / Cancel vs. Schedule).
             boolean selected = newValue != null;
             btnScheduleMaintenance.setDisable(!selected);
             if (selected) {
@@ -458,6 +488,16 @@ public class MainController extends AbstractController implements Initializable 
         onLoadEndpoints();
     }
 
+    /**
+     * Handles the maintenance button. Its behaviour depends on the button's current label
+     * (set by the endpoint selection listener), acting as one of three modes:
+     * <ul>
+     *   <li><b>Cancel</b> — cancel a pending (not-yet-fired) scheduled window;</li>
+     *   <li><b>Disable</b> — immediately call the API to turn maintenance off;</li>
+     *   <li><b>Schedule</b> — validate the date/time inputs and schedule paired
+     *       enable/disable calls on {@link #maintenanceScheduler}.</li>
+     * </ul>
+     */
     public void onScheduleMaintenance(ActionEvent actionEvent) {
         if ("Cancel maintenance mode".equals(btnScheduleMaintenance.getText())) {
             EndpointDetailDTO selectedEndpoint = (EndpointDetailDTO) tableEndpoints.getSelectionModel().getSelectedItem();
@@ -524,6 +564,7 @@ public class MainController extends AbstractController implements Initializable 
         }
         LocalDateTime startLdt = startDate.atTime(spinnerMaintenanceHour.getValue(), spinnerMaintenanceMinute.getValue());
         LocalDateTime endLdt = endDate.atTime(spinnerMaintenanceEndHour.getValue(), spinnerMaintenanceEndMinute.getValue());
+        // Compute delays relative to now; reject a start in the past or an end at/before start.
         long nowMs = System.currentTimeMillis();
         long startMs = startLdt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         long endMs = endLdt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
@@ -551,6 +592,8 @@ public class MainController extends AbstractController implements Initializable 
         App.LOG.info(logScheduled);
         txtAreaConsole.appendText(logScheduled + "\n");
         ScheduledFuture<?>[] futures = pendingFor(endpointCode);
+        // Enable at start time: on success notify + refresh; on failure cancel the paired
+        // disable (there's nothing to turn off) and clear the window.
         futures[0] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask enableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, true);
             enableTask.setOnSucceeded(e -> {
@@ -579,6 +622,8 @@ public class MainController extends AbstractController implements Initializable 
             Platform.runLater(() -> txtAreaConsole.appendText(startMsg + "\n"));
             AbstractTask.startDaemon(enableTask);
         }, startMs - nowMs, TimeUnit.MILLISECONDS);
+        // Disable at end time: on success clear the window; on failure warn that the
+        // endpoint is stuck in maintenance and can be disabled manually.
         futures[1] = maintenanceScheduler.schedule(() -> {
             EndpointSetMaintenanceModeTask disableTask = new EndpointSetMaintenanceModeTask(environmentCode, endpointCode, false);
             disableTask.setOnSucceeded(e -> {
@@ -634,14 +679,17 @@ public class MainController extends AbstractController implements Initializable 
     private static final org.threeten.bp.format.DateTimeFormatter DT_FMT =
             org.threeten.bp.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
+    // Format an API timestamp in the local time zone for table/detail display.
     private static String fmtDt(OffsetDateTime dt) {
         return dt == null ? "" : dt.atZoneSameInstant(org.threeten.bp.ZoneId.systemDefault()).format(DT_FMT);
     }
 
+    // Prefix a console message with a timestamp.
     private static String logMsg(String msg) {
         return "[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "] " + msg;
     }
 
+    // Relabel the maintenance button and highlight it amber only in the "schedule" state.
     private void setMaintenanceButtonState(String text) {
         btnScheduleMaintenance.setText(text);
         if ("Schedule maintenance mode".equals(text)) {
@@ -651,6 +699,7 @@ public class MainController extends AbstractController implements Initializable 
         }
     }
 
+    // Validate the environment/strategy/update-mode selections before building a deployment request.
     private void checksForDeploymentSettings() throws Exception {
         if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
             throw new Exception("No environment selected");
@@ -675,6 +724,8 @@ public class MainController extends AbstractController implements Initializable 
         return createDeploymentRequestDTO;
     }
 
+    // Open the modal progress dialog for a build (optionally chaining a deploy afterwards,
+    // per the "deploy after build" checkbox). BuildController runs the actual tasks.
     private void showBuildAndDeployDialog(CreateBuildRequestDTO createBuildRequestDTO) {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("progress.fxml"));
@@ -696,6 +747,7 @@ public class MainController extends AbstractController implements Initializable 
         }
     }
 
+    // Open the modal progress dialog for a deploy-only flow (existing build → deploy).
     private void showDeployDialog(CreateDeploymentRequestDTO createDeploymentRequestDTO) {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("progress.fxml"));
@@ -732,6 +784,8 @@ public class MainController extends AbstractController implements Initializable 
 
     @FXML
     protected void onStartBuild() {
+        // Validate inputs (and deployment settings if deploy-after-build is on), then
+        // hand off to the progress dialog which triggers the build.
         if (StringUtils.isEmpty(txtBuildCode.getText())) {
             dialogError("No build code provided");
             return;
@@ -754,6 +808,9 @@ public class MainController extends AbstractController implements Initializable 
         showBuildAndDeployDialog(createBuildRequestDTO);
     }
 
+    // Fetch the latest builds in the background, showing indeterminate progress until the
+    // list is populated. The onLoad* / onRefresh* methods for deployments and endpoints
+    // follow the same shape.
     private void onLoadLatestBuilds() {
         BuildListTask task = new BuildListTask();
         task.setOnSucceeded(event -> {
@@ -797,6 +854,8 @@ public class MainController extends AbstractController implements Initializable 
         mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
     }
 
+    // On environment load, reselect the previously-used environment (or the first one),
+    // and refresh endpoints if that tab is currently open.
     private void onLoadEnvironments() {
         EnvironmentListTask task = new EnvironmentListTask();
         task.setOnSucceeded(event -> {
@@ -891,6 +950,8 @@ public class MainController extends AbstractController implements Initializable 
             dialogInfo("Build code provided already (" + txtBuildCode.getText() + ")");
             return;
         }
+        // Propose "yyyyMMdd-N": today's date plus a counter one higher than the latest
+        // build made today under our own scheme (defaults to 1 otherwise).
         String latestBuildCode = buildsList.get(0).getCode();
         String todayDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String suggestedBuildName;
@@ -911,6 +972,7 @@ public class MainController extends AbstractController implements Initializable 
     }
 
     public void onStartDeploy(ActionEvent actionEvent) throws Exception {
+        // Deploy the selected build (only SUCCESS builds are deployable) via the progress dialog.
         if (tableBuilds.getSelectionModel().getSelectedIndex() == -1) {
             dialogError("No build selected");
             return;
@@ -927,6 +989,7 @@ public class MainController extends AbstractController implements Initializable 
 
     @FXML
     public void onRefresh(ActionEvent actionEvent) {
+        // Route the toolbar Refresh button to the reload for whichever tab is active.
         Tab selected = tabPane.getSelectionModel().getSelectedItem();
         if (selected == null) return;
         switch (selected.getId()) {

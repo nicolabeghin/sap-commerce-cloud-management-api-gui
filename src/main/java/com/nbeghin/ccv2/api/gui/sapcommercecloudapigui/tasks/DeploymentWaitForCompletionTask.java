@@ -10,6 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Polls a deployment until it finishes, relaying stage/step progress to the UI.
+ * First waits for it to leave {@code SCHEDULED} ({@link #waitForStart}), then polls
+ * progress, printing each newly-completed/failed stage and step.
+ *
+ * <p>The result convention is inverted: {@code call()} returns {@code true} for
+ * <em>failure</em> and {@code false} for success (see {@link #waitCompletion(String, int, String)}).
+ */
 public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
 
     private final String deploymentCode;
@@ -140,6 +148,10 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
     }
 
 
+    // Report a stage (and its steps) exactly once, when it reaches DONE or FAIL. Reported
+    // stages are appended to tmpProgress.stages so countPrintedStages can skip them next poll.
+    // A FAIL flips failed[0] so the poll loop stops. (failed is a 1-element array to allow
+    // mutation from within the lambda.)
     private void printStage(DeploymentProgressStageDTO stage, DeploymentProgressDTO tmpProgress, boolean... failed) {
         List<DeploymentProgressStageDTO> stageList = tmpProgress.getStages() == null ? new ArrayList() : tmpProgress.getStages();
         OffsetDateTime endTime = stage.getEndTimestamp();

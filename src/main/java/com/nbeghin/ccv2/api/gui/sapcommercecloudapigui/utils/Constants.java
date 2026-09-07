@@ -1,11 +1,22 @@
 package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils;
 
+/**
+ * Application-wide constants and runtime configuration.
+ *
+ * <p>The first three fields ({@link #SUBSCRIPTION_CODE}, {@link #CLIENT_ID},
+ * {@link #CLIENT_SECRET}) and {@link #DEBUG_ENABLED} are mutable: they are populated
+ * at startup from stored {@link java.util.prefs.Preferences} and updated from the
+ * settings dialog. The {@code PREFS_*} strings are preference keys; the {@code URL_*}
+ * strings point to the relevant SAP help pages linked from the settings dialog.
+ */
 public class Constants {
     public static String SUBSCRIPTION_CODE;
     public static String CLIENT_ID;
     public static String CLIENT_SECRET;
     public static boolean DEBUG_ENABLED = false;
+    /** Base URL of the SAP Commerce Cloud Management API (v2). */
     public static final String BASE_PATH = "https://portalapi.commerce.ondemand.com/v2/";
+    /** Upper bound on how many builds the build list fetch requests. */
     public static final int MAX_NUM_BUILDS = 8;
     public static final String PREFS_GIT_BRANCH = "gitBranch";
     public static final String PREFS_ENVIRONMENT = "targetEnvironment";
