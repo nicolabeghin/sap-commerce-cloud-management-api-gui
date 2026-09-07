@@ -33,7 +33,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -757,7 +756,10 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnSucceeded(event -> {
             mainProgressBar.setProgress(100);
             tableBuilds.setDisable(false);
-            buildsList.addAll(Objects.requireNonNull(task.getValue().getValue()));
+            buildsList.clear();
+            if (task.getValue() != null && task.getValue().getValue() != null) {
+                buildsList.addAll(task.getValue().getValue());
+            }
             btnProposeBuildName.setDisable(false);
             Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Builds loaded (" + buildsList.size() + ")") + "\n"));
         });
@@ -778,7 +780,10 @@ public class MainController extends AbstractController implements Initializable 
         task.setOnSucceeded(event -> {
             mainProgressBar.setProgress(100);
             tableDeployments.setDisable(false);
-            deploymentsList.addAll(task.getValue().getValue());
+            deploymentsList.clear();
+            if (task.getValue() != null && task.getValue().getValue() != null) {
+                deploymentsList.addAll(task.getValue().getValue());
+            }
             Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Deployments loaded (" + deploymentsList.size() + ")") + "\n"));
         });
         task.setOnFailed(event -> {
@@ -793,7 +798,14 @@ public class MainController extends AbstractController implements Initializable 
         EnvironmentListTask task = new EnvironmentListTask();
         task.setOnSucceeded(event -> {
             comboEnvironments.setDisable(false);
-            environmentsList.addAll(Objects.requireNonNull(task.getValue().getValue()));
+            environmentsList.clear();
+            if (task.getValue() != null && task.getValue().getValue() != null) {
+                environmentsList.addAll(task.getValue().getValue());
+            }
+            if (environmentsList.isEmpty()) {
+                Platform.runLater(() -> txtAreaConsole.appendText(logMsg("No environments found") + "\n"));
+                return;
+            }
             String environmentCode = App.getPreference(Constants.PREFS_ENVIRONMENT);
             if (environmentCode != null) {
                 EnvironmentDetailDTO environmentDetailDTO = environmentsList.stream().filter(e -> e.getCode().equals(environmentCode)).findFirst().orElse(null);
