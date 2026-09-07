@@ -33,16 +33,15 @@ public abstract class AbstractTask<T> extends Task<T> {
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS);
-        try {
-            String token = OAuthTokenFetcher.fetchBearerToken(Constants.CLIENT_ID, Constants.CLIENT_SECRET);
-            apiClient.getOkBuilder().addInterceptor(chain ->
-                chain.proceed(chain.request().newBuilder()
-                    .header("x-approuter-authorization", "Bearer " + token)
-                    .build())
-            );
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to obtain OAuth2 token: " + e.getMessage(), e);
-        }
+        // The OAuth token is fetched lazily on the first request (see the interceptor below)
+        // rather than here in the constructor: tasks are instantiated on the JavaFX
+        // application thread, and fetching the token here would block the UI on a network
+        // round-trip for every API action.
+        apiClient.getOkBuilder().addInterceptor(chain ->
+            chain.proceed(chain.request().newBuilder()
+                .header("x-approuter-authorization", "Bearer " + getToken())
+                .build())
+        );
         if (Constants.DEBUG_ENABLED) {
             apiClient.getOkBuilder().addInterceptor(new OkHttpLoggingInterceptor());
         }
@@ -51,6 +50,22 @@ public abstract class AbstractTask<T> extends Task<T> {
         environmentApi = this.apiClient.createService(EnvironmentApi.class);
         deploymentApi = this.apiClient.createService(DeploymentApi.class);
         endpointApi = this.apiClient.createService(EndpointApi.class);
+    }
+
+    private volatile String token;
+
+    private String getToken() throws IOException {
+        String t = token;
+        if (t == null) {
+            synchronized (this) {
+                t = token;
+                if (t == null) {
+                    t = OAuthTokenFetcher.fetchBearerToken(Constants.CLIENT_ID, Constants.CLIENT_SECRET);
+                    token = t;
+                }
+            }
+        }
+        return t;
     }
 
     protected BuildApi getBuildApi() {
