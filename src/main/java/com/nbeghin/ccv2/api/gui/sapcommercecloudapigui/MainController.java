@@ -892,8 +892,16 @@ public class MainController extends AbstractController implements Initializable 
         String todayDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String suggestedBuildName;
         int latestNum = 1;
-        if (latestBuildCode != null && latestBuildCode.contains(todayDate)) {
-            latestNum = Integer.parseInt(latestBuildCode.replace(todayDate + ".", "")) + 1;
+        // Only bump the counter when the latest build code matches our own
+        // "yyyyMMdd.N" scheme; other naming schemes (that merely contain today's
+        // date) are left alone rather than risking a parse failure.
+        if (latestBuildCode != null && latestBuildCode.startsWith(todayDate + ".")) {
+            String suffix = latestBuildCode.substring((todayDate + ".").length());
+            try {
+                latestNum = Integer.parseInt(suffix) + 1;
+            } catch (NumberFormatException ex) {
+                latestNum = 1;
+            }
         }
         suggestedBuildName = todayDate + "-" + latestNum;
         txtBuildCode.setText(suggestedBuildName);
