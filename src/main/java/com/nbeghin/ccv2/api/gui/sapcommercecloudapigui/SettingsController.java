@@ -65,6 +65,11 @@ public class SettingsController extends AbstractController implements Initializa
         window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
+    public void onCancelSettings(ActionEvent actionEvent) {
+        Window window = txtClientId.getScene().getWindow();
+        window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
     public void onHelpSubscriptionCode(ActionEvent actionEvent) {
         openWebpage(Constants.URL_CCV2_SUBSCRIPTION_CODE);
     }

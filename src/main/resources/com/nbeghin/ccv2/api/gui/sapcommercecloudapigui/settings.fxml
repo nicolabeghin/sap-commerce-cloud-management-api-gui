@@ -3,34 +3,46 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.SettingsController"
-            prefHeight="180.0" prefWidth="200.0">
-    <VBox spacing="5" alignment="CENTER" VBox.vgrow="ALWAYS">
+            prefHeight="200.0" prefWidth="480.0">
+    <VBox spacing="10" alignment="CENTER" VBox.vgrow="ALWAYS"
+          AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
-        <HBox VBox.vgrow="ALWAYS" alignment="BASELINE_LEFT" spacing="5">
-            <Text text="Client ID             " />
-            <TextField fx:id="txtClientId" promptText="OAuth2 client ID"/>
-            <Button fx:id="btnInfoClientCredentials" onAction="#onHelpClientCredentials" />
-        </HBox>
-        <HBox VBox.vgrow="ALWAYS" alignment="BASELINE_LEFT" spacing="5">
-            <Text text="Client secret      " />
-            <PasswordField fx:id="txtClientSecret" promptText="OAuth2 client secret"/>
-        </HBox>
-        <HBox VBox.vgrow="ALWAYS"  alignment="BASELINE_LEFT" spacing="5">
-            <Text text="CCV2 subscription " />
-            <TextField fx:id="txtSubscriptionCode" promptText="CCV2 subscription">
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints minWidth="110" halignment="RIGHT"/>
+                <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
+                <ColumnConstraints minWidth="30"/>
+            </columnConstraints>
+            <Label text="Client ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="txtClientId" promptText="OAuth2 client ID"
+                       GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="Infinity"/>
+            <Button fx:id="btnInfoClientCredentials" onAction="#onHelpClientCredentials"
+                    GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+            <Label text="Client secret:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <PasswordField fx:id="txtClientSecret" promptText="OAuth2 client secret"
+                           GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity"/>
+
+            <Label text="Subscription code:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <TextField fx:id="txtSubscriptionCode" promptText="CCV2 subscription"
+                       GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="Infinity">
                 <tooltip>
                     <Tooltip text="You can find the subscription code in the Cloud Portal URL. It appears after subscription/ in the URL." />
                 </tooltip>
             </TextField>
-            <Button fx:id="btnInfoSubscriptionCode" onAction="#onHelpSubscriptionCode" />
-        </HBox>
+            <Button fx:id="btnInfoSubscriptionCode" onAction="#onHelpSubscriptionCode"
+                    GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+        </GridPane>
         <CheckBox fx:id="checkboxDebugEnabled" text="Enable network trace"/>
-        <Button fx:id="btnSaveSettings" onAction="#onSaveSettings" text="Save"/>
+        <HBox spacing="5" alignment="CENTER_RIGHT">
+            <Button onAction="#onCancelSettings" text="Cancel"/>
+            <Button fx:id="btnSaveSettings" onAction="#onSaveSettings" text="Save"/>
+        </HBox>
     </VBox>
 </AnchorPane>
