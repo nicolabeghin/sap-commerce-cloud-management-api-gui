@@ -70,6 +70,11 @@ At first start you'll be prompted for
 ## How to run
 Download the precompiled releases for your platform at https://github.com/nicolabeghin/sap-commerce-cloud-api-gui/releases
 
+### OSX Gatekeeper
+
+<img width="260" height="298" alt="image" src="https://github.com/user-attachments/assets/8b5b30a5-a08a-4514-8049-065e8c66e304" />
+<img width="723" height="396" alt="image" src="https://github.com/user-attachments/assets/3d1cf888-8ccc-4105-8630-dec4e17b2b2d" />
+
 ## How to run from source code
     
     git@github.com:nicolabeghin/sap-commerce-cloud-management-api-gui.git
