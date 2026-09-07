@@ -620,6 +620,15 @@ public class MainController extends AbstractController implements Initializable 
         maintenanceScheduler.shutdownNow();
     }
 
+    /**
+     * Returns true if there is at least one maintenance window still pending
+     * (an enable or disable call not yet made). These are held in-memory only and
+     * are lost when the app exits.
+     */
+    public boolean hasPendingMaintenance() {
+        return scheduledMaintenance.keySet().stream().anyMatch(this::hasPendingSchedule);
+    }
+
     private static final org.threeten.bp.format.DateTimeFormatter DT_FMT =
             org.threeten.bp.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
