@@ -7,6 +7,7 @@ import com.sap.cx.commercecloud.management.openapi.model.CreateDeploymentRespons
 import java.io.IOException;
 
 
+/** Triggers a deployment (build + environment + strategy) and returns the created deployment's code. */
 public class DeploymentCreateTask extends AbstractTask<CreateDeploymentResponseDTO> {
 
     private final CreateDeploymentRequestDTO createDeploymentRequestDTO;
@@ -20,7 +21,7 @@ public class DeploymentCreateTask extends AbstractTask<CreateDeploymentResponseD
         updateProgress(0, 100);
         updateTitle("Deployment request");
         updateMessage("Entering deployment request...");
-        CreateDeploymentResponseDTO createDeploymentResponseDTO = getDeploymentApi().createDeployment(createDeploymentRequestDTO, Constants.SUBSCRIPTION_CODE).execute().body();
+        CreateDeploymentResponseDTO createDeploymentResponseDTO = execute(getDeploymentApi().createDeployment(createDeploymentRequestDTO, Constants.SUBSCRIPTION_CODE));
         updateProgress(100, 100);
         updateMessage("Deployment request accepted - " + createDeploymentResponseDTO.getCode());
         return createDeploymentResponseDTO;

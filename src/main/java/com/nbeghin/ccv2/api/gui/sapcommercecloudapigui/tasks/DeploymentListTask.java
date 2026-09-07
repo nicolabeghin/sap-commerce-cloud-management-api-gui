@@ -5,6 +5,7 @@ import com.sap.cx.commercecloud.management.openapi.model.DeploymentDetailsDTO;
 
 import java.io.IOException;
 
+/** Fetches the latest deployments (up to 5) for a given environment. */
 public class DeploymentListTask extends AbstractTask<DeploymentDetailsDTO> {
 
     private final String environmentCode;
@@ -17,6 +18,6 @@ public class DeploymentListTask extends AbstractTask<DeploymentDetailsDTO> {
     protected DeploymentDetailsDTO call() throws IOException {
         updateProgress(0, 100);
         updateMessage("Loading latest deployments...");
-        return getDeploymentApi().getDeployments(Constants.SUBSCRIPTION_CODE, null, environmentCode, null, 5, null, null, false).execute().body();
+        return execute(getDeploymentApi().getDeployments(Constants.SUBSCRIPTION_CODE, null, environmentCode, null, 5, null, null, false));
     }
 }

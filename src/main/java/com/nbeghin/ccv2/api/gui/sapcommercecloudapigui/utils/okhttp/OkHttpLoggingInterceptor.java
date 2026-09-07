@@ -7,6 +7,10 @@ import okhttp3.Response;
 
 import java.io.IOException;
 
+/**
+ * OkHttp interceptor that logs each request URL and the response timing plus headers.
+ * Only installed when {@code Constants.DEBUG_ENABLED} is set.
+ */
 public class OkHttpLoggingInterceptor implements Interceptor {
 
     public OkHttpLoggingInterceptor() {

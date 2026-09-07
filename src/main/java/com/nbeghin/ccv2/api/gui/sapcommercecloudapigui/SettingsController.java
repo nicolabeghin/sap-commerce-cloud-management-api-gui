@@ -11,58 +11,78 @@ import javafx.scene.control.TextField;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.commons.lang3.StringUtils;
-import org.controlsfx.glyphfont.FontAwesome;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the settings dialog ({@code settings.fxml}). Edits the subscription
+ * code and OAuth2 client credentials, plus the debug-logging toggle, and persists them
+ * (via {@link App} preferences) into {@link Constants} on save.
+ */
 public class SettingsController extends AbstractController implements Initializable {
 
     @FXML
-    private Button btnInfoAccessToken;
+    private TextField txtClientId;
     @FXML
-    private Button btnInfoSubscriptionCode;
-    @FXML
-    private PasswordField txtAccessToken;
+    private PasswordField txtClientSecret;
     @FXML
     private TextField txtSubscriptionCode;
     @FXML
     private CheckBox checkboxDebugEnabled;
+    @FXML
+    private Button btnInfoSubscriptionCode;
+    @FXML
+    private Button btnInfoClientCredentials;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        txtAccessToken.setText(Constants.ACCESS_TOKEN);
+        txtClientId.setText(Constants.CLIENT_ID);
+        txtClientSecret.setText(Constants.CLIENT_SECRET);
         txtSubscriptionCode.setText(Constants.SUBSCRIPTION_CODE);
         checkboxDebugEnabled.setSelected(Constants.DEBUG_ENABLED);
-        btnInfoSubscriptionCode.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
-        btnInfoAccessToken.setGraphic(fontAwesome.create(FontAwesome.Glyph.INFO));
+        btnInfoSubscriptionCode.setGraphic(fontAwesome.create(org.controlsfx.glyphfont.FontAwesome.Glyph.INFO));
+        btnInfoClientCredentials.setGraphic(fontAwesome.create(org.controlsfx.glyphfont.FontAwesome.Glyph.INFO));
     }
 
+    // Validate all three credentials are present, push them into Constants, persist,
+    // then close the dialog. Note: because preferences are namespaced under the
+    // subscription code, the subscription must be set before the other keys make sense.
     public void onSaveSettings(ActionEvent actionEvent) {
         if (StringUtils.isBlank(txtSubscriptionCode.getText())) {
             dialogError("Missing CCV2 subscription code");
             return;
         }
-        if (StringUtils.isBlank(txtAccessToken.getText())) {
-            dialogError("Missing CCV2 API token");
+        if (StringUtils.isBlank(txtClientId.getText())) {
+            dialogError("Missing OAuth2 client ID");
+            return;
+        }
+        if (StringUtils.isBlank(txtClientSecret.getText())) {
+            dialogError("Missing OAuth2 client secret");
             return;
         }
         Constants.SUBSCRIPTION_CODE = txtSubscriptionCode.getText();
-        Constants.ACCESS_TOKEN = txtAccessToken.getText();
+        Constants.CLIENT_ID = txtClientId.getText();
+        Constants.CLIENT_SECRET = txtClientSecret.getText();
         Constants.DEBUG_ENABLED = checkboxDebugEnabled.isSelected();
         App.savePreference(Constants.PREFS_SUBSCRIPTION, Constants.SUBSCRIPTION_CODE);
-        App.savePreference(Constants.PREFS_ACCESS_TOKEN, Constants.ACCESS_TOKEN);
+        App.savePreference(Constants.PREFS_CLIENT_ID, Constants.CLIENT_ID);
+        App.savePreference(Constants.PREFS_CLIENT_SECRET, Constants.CLIENT_SECRET);
         App.savePreference(Constants.PREFS_DEBUG_ENABLED, Constants.DEBUG_ENABLED);
-        Window window = txtAccessToken.getScene().getWindow();
+        Window window = txtClientId.getScene().getWindow();
         window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
-    public void onHelpAccessToken(ActionEvent actionEvent) {
-        openWebpage(Constants.URL_CCV2_ACCESS_TOKEN);
+    public void onCancelSettings(ActionEvent actionEvent) {
+        Window window = txtClientId.getScene().getWindow();
+        window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
     public void onHelpSubscriptionCode(ActionEvent actionEvent) {
         openWebpage(Constants.URL_CCV2_SUBSCRIPTION_CODE);
     }
-}
 
+    public void onHelpClientCredentials(ActionEvent actionEvent) {
+        openWebpage(Constants.URL_CCV2_CLIENT_CREDENTIALS);
+    }
+}

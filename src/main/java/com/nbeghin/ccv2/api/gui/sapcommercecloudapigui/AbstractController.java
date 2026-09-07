@@ -2,13 +2,23 @@ package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
 
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.SystemCommons;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.controlsfx.control.Notifications;
@@ -19,6 +29,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 
+/**
+ * Base controller shared by all UI controllers. Provides cross-platform toast
+ * notifications (native {@code osascript} on macOS, ControlsFX elsewhere), modal
+ * alert/detail dialogs, the maintenance-confirmation dialog, and browser launching.
+ * Also loads the bundled FontAwesome font once for glyph icons.
+ */
 public abstract class AbstractController {
     public static Stage notificationStage;
     protected static FontAwesome fontAwesome;
@@ -27,6 +43,8 @@ public abstract class AbstractController {
         fontAwesome = new FontAwesome(MainController.class.getClassLoader().getResourceAsStream("fontawesome-free-652.otf"));
     }
 
+    // Notifications are dispatched on the FX thread; macOS uses a native banner
+    // (ControlsFX notifications look out of place there), everything else uses ControlsFX.
     protected void notificationInfo(String title, String content) {
         Platform.runLater(() -> {
             try {
@@ -56,6 +74,8 @@ public abstract class AbstractController {
 
 
     /**
+     * ControlsFX notifications need an owner window; on a headless-ish/no-focused-window
+     * situation they otherwise fail. Lazily create a 1x1 transparent stage to act as owner.
      * @url https://stackoverflow.com/a/26876019/2378095
      */
     private void getOwnerStageForNotification() {
@@ -78,7 +98,16 @@ public abstract class AbstractController {
     }
 
     private void osxNotification(String title, String content) throws IOException {
-        Runtime.getRuntime().exec(new String[]{"osascript", "-e", "display notification \"" + content + "\" with title \"" + title + "\" sound name \"Frog\""});
+        String script = "display notification \"" + escapeAppleScript(content)
+                + "\" with title \"" + escapeAppleScript(title) + "\" sound name \"Frog\"";
+        Runtime.getRuntime().exec(new String[]{"osascript", "-e", script});
+    }
+
+    // Escape backslashes and quotes so user/API-supplied text can't break out of the
+    // AppleScript string literals (or inject additional script).
+    private static String escapeAppleScript(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private void dialogInfo(String header, String content) {
@@ -93,6 +122,7 @@ public abstract class AbstractController {
     }
 
     private void dialogError(String header, String content) {
+        App.LOG.error("ERROR - " + header + " - " + content);
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, content);
             alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -108,6 +138,83 @@ public abstract class AbstractController {
 
     protected void dialogInfo(String content) {
         dialogInfo("INFO", content);
+    }
+
+    /** Scrollable, read-only detail dialog for long multi-line content (build/deployment/endpoint details). */
+    protected void dialogDetails(String title, String content) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(null);
+            TextArea textArea = new TextArea(content);
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+            textArea.setMaxWidth(Double.MAX_VALUE);
+            textArea.setMaxHeight(Double.MAX_VALUE);
+            GridPane.setVgrow(textArea, Priority.ALWAYS);
+            GridPane.setHgrow(textArea, Priority.ALWAYS);
+            GridPane grid = new GridPane();
+            grid.setMaxWidth(Double.MAX_VALUE);
+            grid.add(textArea, 0, 0);
+            alert.getDialogPane().setContent(grid);
+            alert.getDialogPane().setPrefSize(520, 400);
+            alert.showAndWait();
+        });
+    }
+
+    /**
+     * Confirmation dialog shown before scheduling a maintenance window. Prominently
+     * warns that the app must stay running and awake for the whole window, since it
+     * drives the enable/disable API calls itself (there is no server-side scheduling).
+     */
+    protected Optional<ButtonType> dialogMaintenanceConfirm(String endpointName, String start, String end) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Confirm Maintenance Mode");
+        alert.setHeaderText(null);
+        alert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Label nameLabel = new Label("Schedule maintenance window for \"" + endpointName + "\"?");
+        nameLabel.setFont(Font.font(null, FontWeight.BOLD, 13));
+
+        Label startLabel = new Label("Start:   " + start);
+        Label endLabel   = new Label("End:     " + end);
+
+        Label warningTitle = new Label("⚠  Application must remain running");
+        warningTitle.setFont(Font.font(null, FontWeight.BOLD, 12));
+        warningTitle.setTextFill(Color.web("#7d4e00"));
+
+        Label warningBody = new Label(
+            "This application drives the enable and disable API calls at the\n" +
+            "scheduled times. It must stay open and running for the entire\n" +
+            "duration of the maintenance window. Closing it early will prevent\n" +
+            "one or both calls from being made.");
+        warningBody.setTextFill(Color.web("#7d4e00"));
+        warningBody.setWrapText(true);
+
+        Label powerTitle = new Label("⚡  Disable sleep / power management");
+        powerTitle.setFont(Font.font(null, FontWeight.BOLD, 12));
+        powerTitle.setTextFill(Color.web("#7d4e00"));
+
+        Label powerBody = new Label(
+            "Make sure your machine will not go to sleep or hibernate during\n" +
+            "the window. On macOS go to System Settings → Battery → prevent\n" +
+            "sleep when charging. On Windows open Power Options and set\n" +
+            "\"Put the computer to sleep\" to Never.");
+        powerBody.setTextFill(Color.web("#7d4e00"));
+        powerBody.setWrapText(true);
+
+        VBox warningBox = new VBox(6, warningTitle, warningBody, powerTitle, powerBody);
+        warningBox.setPadding(new Insets(10));
+        warningBox.setStyle("-fx-background-color: #fff3cd; -fx-border-color: #f0ad4e; -fx-border-radius: 4; -fx-background-radius: 4;");
+
+        VBox content = new VBox(10, nameLabel, startLabel, endLabel, warningBox);
+        content.setPadding(new Insets(4, 12, 4, 12));
+
+        alert.getDialogPane().setContent(content);
+        alert.getDialogPane().setPrefWidth(460);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        return alert.showAndWait();
     }
 
     protected void openWebpage(String site) {

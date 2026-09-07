@@ -6,6 +6,7 @@ import com.sap.cx.commercecloud.management.openapi.model.DeploymentDetailDTO;
 import java.io.IOException;
 
 
+/** Fetches full details for a single deployment by its code. */
 public class DeploymentDetailTask extends AbstractTask<DeploymentDetailDTO> {
 
     private final String deploymentCode;
@@ -18,6 +19,6 @@ public class DeploymentDetailTask extends AbstractTask<DeploymentDetailDTO> {
     protected DeploymentDetailDTO call() throws IOException {
         updateProgress(0, 100);
         updateMessage("Please wait...");
-        return getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, this.deploymentCode).execute().body();
+        return execute(getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, this.deploymentCode));
     }
 }

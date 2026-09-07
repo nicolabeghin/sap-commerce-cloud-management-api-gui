@@ -3,12 +3,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="mainWindow" alignment="CENTER" prefHeight="500.0" prefWidth="480.0" spacing="20.0"
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="mainWindow" alignment="CENTER" prefHeight="500.0" prefWidth="620.0" spacing="0"
       xmlns="http://javafx.com/javafx/17.0.2-ea" fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.MainController">
 
     <MenuBar fx:id="menuBar" VBox.vgrow="NEVER">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem fx:id="menuItemSettings" mnemonicParsing="false" onAction="#onActionMenuSettings" text="Settings"/>
+            <MenuItem fx:id="menuItemClearConsole" mnemonicParsing="false" onAction="#onActionMenuClearConsole" text="Clear console"/>
             <MenuItem fx:id="menuItemQuit" mnemonicParsing="false" onAction="#onActionMenuQuit" text="Quit"/>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -20,12 +21,12 @@
         <VBox AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
 
             <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
-                <Tab text="Existing build">
-                    <VBox>
+                <Tab text="Existing builds" fx:id="tabExistingBuild">
+                    <VBox VBox.vgrow="ALWAYS">
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
-                        <TableView fx:id="tableBuilds" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="tableBuilds" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                             <placeholder>
                                 <Label text="No builds loaded"/>
                             </placeholder>
@@ -35,21 +36,14 @@
                                 <Insets top="5.0"/>
                             </padding>
                             <Button fx:id="btnStartDeploy" alignment="BASELINE_RIGHT" disable="true" onAction="#onStartDeploy" text="Deploy"/>
-                            <Button fx:id="btnShowBuildDetails" alignment="BASELINE_LEFT" disable="true" onAction="#onShowBuildDetails" text="Build details"/>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="btnRefreshBuilds" alignment="BASELINE_LEFT" onAction="#onRefreshBuilds">
-                                <tooltip>
-                                    <Tooltip text="Refresh builds"/>
-                                </tooltip>
-                            </Button>
                         </HBox>
                     </VBox>
 
                 </Tab>
-                <Tab text="New build">
-                    <VBox>
+                <Tab text="New build" fx:id="tabNewBuild">
+                    <VBox VBox.vgrow="ALWAYS">
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
                         <HBox alignment="CENTER_LEFT" spacing="5">
                             <TextField fx:id="txtGitBranches" promptText="Git branch or tag" HBox.hgrow="ALWAYS"/>
@@ -73,11 +67,11 @@
                 </Tab>
 
                 <Tab text="Deployments" fx:id="tabDeployments">
-                    <VBox>
+                    <VBox VBox.vgrow="ALWAYS">
                         <padding>
-                            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
                         </padding>
-                        <TableView fx:id="tableDeployments" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="tableDeployments" disable="true" prefHeight="250.0" prefWidth="150.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                             <placeholder>
                                 <Label text="No deployments loaded"/>
                             </placeholder>
@@ -86,23 +80,54 @@
                             <padding>
                                 <Insets top="5.0"/>
                             </padding>
-                            <Button fx:id="btnShowDeploymentDetails" alignment="BASELINE_LEFT" disable="true" onAction="#onShowDeploymentDetails" text="Deployment details"/>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="btnRefreshDeployments" alignment="BASELINE_LEFT" onAction="#onRefreshDeployments">
-                                <tooltip>
-                                    <Tooltip text="Refresh deployments"/>
-                                </tooltip>
-                            </Button>
                         </HBox>
                     </VBox>
 
                 </Tab>
+
+                <Tab text="Endpoints" fx:id="tabEndpoints">
+                    <VBox spacing="5" VBox.vgrow="ALWAYS">
+                        <padding>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
+                        </padding>
+                        <TableView fx:id="tableEndpoints" disable="true" prefHeight="180.0" prefWidth="150.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                            <placeholder>
+                                <Label text="No endpoints loaded"/>
+                            </placeholder>
+                        </TableView>
+                        <VBox spacing="5">
+                            <padding>
+                                <Insets top="5.0"/>
+                            </padding>
+                            <HBox alignment="BASELINE_LEFT" spacing="10">
+                                <Label text="Start:">
+                                    <tooltip><Tooltip text="Maintenance start date and time"/></tooltip>
+                                </Label>
+                                <DatePicker fx:id="datePickerMaintenanceStart" promptText="Date" disable="true" prefWidth="115"/>
+                                <Spinner fx:id="spinnerMaintenanceHour" prefWidth="60" disable="true"/>
+                                <Label text=":"/>
+                                <Spinner fx:id="spinnerMaintenanceMinute" prefWidth="60" disable="true"/>
+                                <Label text="End:">
+                                    <tooltip><Tooltip text="Maintenance end date and time"/></tooltip>
+                                </Label>
+                                <DatePicker fx:id="datePickerMaintenanceEnd" promptText="Date" disable="true" prefWidth="115"/>
+                                <Spinner fx:id="spinnerMaintenanceEndHour" prefWidth="60" disable="true"/>
+                                <Label text=":"/>
+                                <Spinner fx:id="spinnerMaintenanceEndMinute" prefWidth="60" disable="true"/>
+                            </HBox>
+                            <Button fx:id="btnScheduleMaintenance" disable="true"
+                                    onAction="#onScheduleMaintenance" text="Schedule maintenance mode"
+                                    maxWidth="Infinity"/>
+                        </VBox>
+                        <HBox spacing="5">
+                        </HBox>
+                    </VBox>
+                </Tab>
             </TabPane>
 
-            <ProgressBar fx:id="mainProgressBar" maxWidth="Infinity" progress="Infinity"/>
-            <TextArea fx:id="txtAreaConsole" maxHeight="60" editable="false"/>
+            <TextArea fx:id="txtAreaConsole" maxHeight="90" prefHeight="90" editable="false" wrapText="true"/>
 
-            <HBox spacing="5">
+            <HBox spacing="5" alignment="CENTER_LEFT">
                 <padding>
                     <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
                 </padding>
@@ -121,6 +146,12 @@
                         <Tooltip text="Database update mode"/>
                     </tooltip>
                 </ComboBox>
+                <ProgressBar fx:id="mainProgressBar" progress="0" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Button fx:id="btnRefresh" onAction="#onRefresh">
+                    <tooltip>
+                        <Tooltip text="Refresh"/>
+                    </tooltip>
+                </Button>
             </HBox>
         </VBox>
 

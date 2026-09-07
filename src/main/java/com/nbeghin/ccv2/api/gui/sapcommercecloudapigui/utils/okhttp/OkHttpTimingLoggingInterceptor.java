@@ -7,6 +7,10 @@ import okhttp3.Response;
 
 import java.io.IOException;
 
+/**
+ * OkHttp interceptor that logs response timing only (no headers). Always installed,
+ * unlike the verbose {@link OkHttpLoggingInterceptor} which is debug-gated.
+ */
 public class OkHttpTimingLoggingInterceptor implements Interceptor {
 
     public OkHttpTimingLoggingInterceptor() {

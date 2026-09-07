@@ -8,6 +8,11 @@ import java.io.IOException;
 import static com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.App.LOG;
 
 
+/**
+ * Polls a build until it reaches a terminal state. First waits for the build to leave
+ * {@code UNKNOWN}/{@code SCHEDULED} ({@link #waitForStart}), then polls its progress,
+ * relaying started tasks and percentage to the UI, until it succeeds, fails, or times out.
+ */
 public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -22,18 +27,22 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         updateTitle("Build progress");
         updateProgress(0, 100);
         updateMessage("Waiting for build completion...");
+        // pollInterval in ms, timeout in minutes.
         return waitCompletion(buildCode, 4200, "120");
     }
 
+    // Poll build progress every pollInterval ms until SUCCESS, or a failure/timeout is
+    // detected by checkError. Only forward newly-started tasks and rising percentages to
+    // the UI to avoid duplicate/backwards updates.
     public BuildProgressDTO waitCompletion(String buildCode, int pollInterval, String timeout) throws InterruptedException, IOException {
         LOG.info("Starting wait for build completion " + buildCode);
-        this.waitForStart(buildCode, pollInterval);
+        this.waitForStart(buildCode, pollInterval, timeout);
         BuildProgressDTO previousProgress = null;
         updateMessage("Waiting for the build with code '" + buildCode + "' to complete.");
         int waitTime = 0;
 
         while (true) {
-            BuildProgressDTO currentProgress = getBuildApi().getBuildProgress(Constants.SUBSCRIPTION_CODE, buildCode).execute().body();
+            BuildProgressDTO currentProgress = execute(getBuildApi().getBuildProgress(Constants.SUBSCRIPTION_CODE, buildCode));
             int previousNumOfStartedTasks = previousProgress == null ? 0 : previousProgress.getStartedTasks().size();
             if (currentProgress.getStartedTasks().size() > previousNumOfStartedTasks) {
                 currentProgress.getStartedTasks().stream().skip(previousNumOfStartedTasks).forEach((startedTaskDTO) -> {
@@ -61,12 +70,14 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         }
     }
 
-    private void waitForStart(String buildCode, int pollInterval) throws InterruptedException, IOException {
+    private void waitForStart(String buildCode, int pollInterval, String timeout) throws InterruptedException, IOException {
         LOG.info("Starting wait for build start " + buildCode);
         String previousStatus = null;
+        long timeoutMs = (long) Integer.parseInt(timeout) * 60000L;
+        int waitTime = 0;
 
         while (true) {
-            String currentStatus = getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, buildCode).execute().body().getStatus();
+            String currentStatus = execute(getBuildApi().getBuild(Constants.SUBSCRIPTION_CODE, buildCode)).getStatus();
             if (!"UNKNOWN".equals(currentStatus) && !"SCHEDULED".equals(currentStatus)) {
                 return;
             }
@@ -76,6 +87,11 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
             }
 
             previousStatus = currentStatus;
+
+            waitTime += pollInterval;
+            if (waitTime > timeoutMs) {
+                throw new InterruptedException("Build '" + buildCode + "' did not start within " + timeout + " minutes, canceling the wait.");
+            }
 
             Thread.sleep(pollInterval);
 
@@ -90,7 +106,7 @@ public class BuildWaitForCompletionTask extends AbstractTask<BuildProgressDTO> {
         } else {
             String buildStatus = currentProgress.getBuildStatus();
             if (!"DELETED".equals(buildStatus) && !"FAIL".equals(buildStatus)) {
-                if (waitTime > Integer.parseInt(timeout) * '\uea60') {
+                if (waitTime > Integer.parseInt(timeout) * 60000L) {
                     updateMessage("Build has not completed in " + Integer.parseInt(timeout) + " minutes, canceling the wait.");
                     return true;
                 } else {

@@ -1,6 +1,7 @@
 package com.nbeghin.ccv2.api.gui.sapcommercecloudapigui;
 
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.BuildCreateTask;
+import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.AbstractTask;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.BuildWaitForCompletionTask;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.DeploymentCreateTask;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.tasks.DeploymentWaitForCompletionTask;
@@ -13,6 +14,14 @@ import org.controlsfx.control.TaskProgressView;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the modal progress dialog ({@code progress.fxml}) that drives the
+ * build-and-deploy flow. Depending on what the caller sets, it runs one of:
+ * build → (optionally) wait → deploy → wait, or deploy → wait only.
+ *
+ * <p>Each phase is a daemon task chained from the previous one's success handler, and
+ * every task is added to the {@link TaskProgressView} so the user sees per-step progress.
+ */
 public class BuildController extends AbstractController implements Initializable {
 
     @FXML
@@ -50,6 +59,8 @@ public class BuildController extends AbstractController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         taskProgressView.setRetainTasks(true);
+        // Kick off the flow once the dialog is shown: a build request implies the
+        // build(+optional deploy) path; otherwise a deployment request must be present.
         Platform.runLater(() -> {
             try {
                 if (createBuildRequestDTO != null) {
@@ -79,7 +90,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     private void waitForBuildComplete(String buildCode) {
@@ -95,7 +106,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     private void onStartDeploymentFromCompletedBuild(BuildProgressDTO build) {
@@ -118,12 +129,13 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 
     private void waitForDeploymentComplete(String deploymentCode) {
         DeploymentWaitForCompletionTask task = new DeploymentWaitForCompletionTask(deploymentCode);
         task.setOnSucceeded(event -> {
+            // The wait task returns true on FAILURE, false on success (inverted convention).
             Boolean aBoolean = task.getValue();
             if (aBoolean) {
                 notificationError("Deployment", "Deployment failed");
@@ -135,7 +147,7 @@ public class BuildController extends AbstractController implements Initializable
             dialogError(task.getException().getMessage());
         });
         taskProgressView.getTasks().add(task);
-        new Thread(task).start();
+        AbstractTask.startDaemon(task);
     }
 }
 

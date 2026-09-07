@@ -10,6 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Polls a deployment until it finishes, relaying stage/step progress to the UI.
+ * First waits for it to leave {@code SCHEDULED} ({@link #waitForStart}), then polls
+ * progress, printing each newly-completed/failed stage and step.
+ *
+ * <p>The result convention is inverted: {@code call()} returns {@code true} for
+ * <em>failure</em> and {@code false} for success (see {@link #waitCompletion(String, int, String)}).
+ */
 public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
 
     private final String deploymentCode;
@@ -38,14 +46,14 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
      * @throws Exception
      */
     public boolean waitCompletion(String deploymentCode, int pollInterval, String timeout) throws Exception {
-        this.waitForStart(deploymentCode, pollInterval);
+        this.waitForStart(deploymentCode, pollInterval, timeout);
         DeploymentProgressDTO previousProgress = null;
         updateMessage("Waiting for the deployment with code '" + deploymentCode + "' to complete.");
         boolean[] failed = new boolean[]{false};
         int waitTime = 0;
 
         while (!failed[0]) {
-            DeploymentProgressDTO currentProgress = getDeploymentApi().getDeploymentProgress(Constants.SUBSCRIPTION_CODE, deploymentCode).execute().body();
+            DeploymentProgressDTO currentProgress = execute(getDeploymentApi().getDeploymentProgress(Constants.SUBSCRIPTION_CODE, deploymentCode));
             DeploymentProgressDTO tmpProgress = previousProgress == null ? new DeploymentProgressDTO() : previousProgress;
             currentProgress.getStages().stream().skip(this.countPrintedStages(tmpProgress)).forEach((stage) -> {
                 this.printStage(stage, tmpProgress, failed);
@@ -79,11 +87,13 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
         return failed[0];
     }
 
-    private void waitForStart(String deploymentCode, int pollInterval) throws Exception {
+    private void waitForStart(String deploymentCode, int pollInterval, String timeout) throws Exception {
         String previousStatus = null;
+        long timeoutMs = (long) Integer.parseInt(timeout) * 60000L;
+        int waitTime = 0;
 
         while (true) {
-            String currentStatus = getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, deploymentCode).execute().body().getStatus();
+            String currentStatus = execute(getDeploymentApi().getDeployment(Constants.SUBSCRIPTION_CODE, deploymentCode)).getStatus();
             if (!"SCHEDULED".equals(currentStatus)) {
                 return;
             }
@@ -93,6 +103,12 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
             }
 
             previousStatus = currentStatus;
+
+            waitTime += pollInterval;
+            if (waitTime > timeoutMs) {
+                throw new InterruptedException("Deployment '" + deploymentCode + "' did not start within " + timeout + " minutes, canceling the wait.");
+            }
+
             Thread.sleep(pollInterval);
         }
     }
@@ -123,7 +139,7 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
     }
 
     private boolean passWaitLimit(int waitTime, String deploymentCode, String timeout) {
-        if (waitTime > Integer.parseInt(timeout) * '\uea60') {
+        if (waitTime > Integer.parseInt(timeout) * 60000L) {
             updateMessage("This deployment with code '" + deploymentCode + "' has not completed in " + waitTime + "ms, see deployment log for details.");
             return true;
         } else {
@@ -132,6 +148,10 @@ public class DeploymentWaitForCompletionTask extends AbstractTask<Boolean> {
     }
 
 
+    // Report a stage (and its steps) exactly once, when it reaches DONE or FAIL. Reported
+    // stages are appended to tmpProgress.stages so countPrintedStages can skip them next poll.
+    // A FAIL flips failed[0] so the poll loop stops. (failed is a 1-element array to allow
+    // mutation from within the lambda.)
     private void printStage(DeploymentProgressStageDTO stage, DeploymentProgressDTO tmpProgress, boolean... failed) {
         List<DeploymentProgressStageDTO> stageList = tmpProgress.getStages() == null ? new ArrayList() : tmpProgress.getStages();
         OffsetDateTime endTime = stage.getEndTimestamp();
