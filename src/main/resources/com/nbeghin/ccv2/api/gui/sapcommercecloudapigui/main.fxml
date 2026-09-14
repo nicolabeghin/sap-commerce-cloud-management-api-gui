@@ -123,6 +123,28 @@
                         </HBox>
                     </VBox>
                 </Tab>
+                <Tab text="Scheduled activities" fx:id="tabScheduledActivities">
+                    <VBox VBox.vgrow="ALWAYS">
+                        <padding>
+                            <Insets bottom="5.0" left="20.0" right="20.0" top="10.0"/>
+                        </padding>
+                        <TableView fx:id="tableScheduledActivities" disable="true"
+                                   prefHeight="250.0" prefWidth="150.0"
+                                   HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                            <placeholder>
+                                <Label text="No scheduled activities loaded"/>
+                            </placeholder>
+                        </TableView>
+                        <HBox spacing="5">
+                            <padding>
+                                <Insets top="5.0"/>
+                            </padding>
+                            <Button fx:id="btnNewActivity" text="New Activity" onAction="#onNewActivity"/>
+                            <Button fx:id="btnCancelActivity" text="Cancel Activity"
+                                    onAction="#onCancelActivity" disable="true"/>
+                        </HBox>
+                    </VBox>
+                </Tab>
             </TabPane>
 
             <TextArea fx:id="txtAreaConsole" maxHeight="90" prefHeight="90" editable="false" wrapText="true"/>

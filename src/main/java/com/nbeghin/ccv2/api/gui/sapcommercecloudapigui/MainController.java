@@ -56,6 +56,7 @@ public class MainController extends AbstractController implements Initializable 
     private static final ObservableList<DeploymentDetailDTO> deploymentsList = FXCollections.observableArrayList();
     private static final ObservableList<EnvironmentDetailDTO> environmentsList = FXCollections.observableArrayList(); // @TODO
     private static final ObservableList<EndpointDetailDTO> endpointsList = FXCollections.observableArrayList();
+    private static final ObservableList<ScheduledActivityDetailDTO> scheduledActivitiesList = FXCollections.observableArrayList();
     // Suggestions offered by the Git-branch autocomplete field (the API accepts any branch).
     private static final ObservableList<String> gitBranches = FXCollections.observableArrayList("develop", "master", "production");
     private static final ObservableList<CreateDeploymentRequestDTO.DatabaseUpdateModeEnum> deploymentDatabaseUpdateModes = FXCollections.observableArrayList(CreateDeploymentRequestDTO.DatabaseUpdateModeEnum.values());
@@ -136,6 +137,14 @@ public class MainController extends AbstractController implements Initializable 
     private Spinner<Integer> spinnerMaintenanceEndMinute;
     @FXML
     private Button btnScheduleMaintenance;
+    @FXML
+    private TableView<ScheduledActivityDetailDTO> tableScheduledActivities;
+    @FXML
+    private Button btnNewActivity;
+    @FXML
+    private Button btnCancelActivity;
+    @FXML
+    private Tab tabScheduledActivities;
 
 
 
@@ -165,6 +174,7 @@ public class MainController extends AbstractController implements Initializable 
         initializeBuildsTable();
         initializeDeploymentsTable();
         initializeEndpointsTable();
+        initializeScheduledActivitiesTable();
         // Default the maintenance window to one hour from now, lasting one hour.
         java.time.LocalDate today = java.time.LocalDate.now();
         java.time.LocalDateTime startDefault = java.time.LocalDateTime.now().plusHours(1);
@@ -196,13 +206,18 @@ public class MainController extends AbstractController implements Initializable 
             if (newValue != null && newValue != oldValue && "tabEndpoints".equals(newValue.getId()) && endpointsList.isEmpty()) {
                 onLoadEndpoints();
             }
+            if (newValue != null && newValue != oldValue
+                    && "tabScheduledActivities".equals(newValue.getId())
+                    && scheduledActivitiesList.isEmpty()) {
+                onLoadScheduledActivities();
+            }
             if (newValue != null && newValue != oldValue) {
                 String tabId = newValue.getId();
                 boolean enabled = "tabNewBuild".equals(tabId)
                         || ("tabExistingBuild".equals(tabId) && tableBuilds.getSelectionModel().getSelectedIndex() != -1);
                 comboDeploymentStrategies.setDisable(!enabled);
                 comboDeploymentDatabaseUpdateMode.setDisable(!enabled);
-                boolean refreshable = "tabExistingBuild".equals(tabId) || "tabDeployments".equals(tabId) || "tabEndpoints".equals(tabId);
+                boolean refreshable = "tabExistingBuild".equals(tabId) || "tabDeployments".equals(tabId) || "tabEndpoints".equals(tabId) || "tabScheduledActivities".equals(tabId);
                 btnRefresh.setDisable(!refreshable);
             }
         });
@@ -239,6 +254,10 @@ public class MainController extends AbstractController implements Initializable 
                 }
                 if ("tabEndpoints".equals(tabPane.getSelectionModel().getSelectedItem().getId())) {
                     onLoadEndpoints();
+                }
+                if ("tabScheduledActivities".equals(tabPane.getSelectionModel().getSelectedItem().getId())) {
+                    scheduledActivitiesList.clear();
+                    onLoadScheduledActivities();
                 }
             }
         });
@@ -486,6 +505,202 @@ public class MainController extends AbstractController implements Initializable 
     public void onRefreshEndpoints(ActionEvent actionEvent) {
         endpointsList.clear();
         onLoadEndpoints();
+    }
+
+    private void initializeScheduledActivitiesTable() {
+        TableColumn<ScheduledActivityDetailDTO, String> codeCol = new TableColumn<>("Code");
+        codeCol.setCellValueFactory(new PropertyValueFactory<>("code"));
+        codeCol.setPrefWidth(100);
+
+        TableColumn<ScheduledActivityDetailDTO, String> typeCol = new TableColumn<>("Activity Type");
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("activityType"));
+        typeCol.setMaxWidth(Double.MAX_VALUE);
+
+        TableColumn<ScheduledActivityDetailDTO, OffsetDateTime> scheduledCol = new TableColumn<>("Scheduled Time");
+        scheduledCol.setCellValueFactory(new PropertyValueFactory<>("scheduledTimestamp"));
+        scheduledCol.setCellFactory(col -> new TableCell<ScheduledActivityDetailDTO, OffsetDateTime>() {
+            @Override protected void updateItem(OffsetDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : fmtDt(item));
+            }
+        });
+        scheduledCol.setPrefWidth(130);
+
+        TableColumn<ScheduledActivityDetailDTO, String> statusCol = new TableColumn<>("Status");
+        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+        statusCol.setPrefWidth(100);
+
+        tableScheduledActivities.getColumns().addAll(codeCol, typeCol, scheduledCol, statusCol);
+        tableScheduledActivities.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableScheduledActivities.setItems(scheduledActivitiesList);
+
+        btnCancelActivity.setDisable(true);
+        tableScheduledActivities.getSelectionModel().selectedItemProperty()
+            .addListener((observable, oldValue, newValue) -> {
+                boolean cancelable = newValue != null
+                    && Boolean.TRUE.equals(newValue.isCancelable())
+                    && newValue.getStatus() != ScheduledActivityDetailDTO.StatusEnum.CANCELED
+                    && newValue.getStatus() != ScheduledActivityDetailDTO.StatusEnum.CANCELING;
+                btnCancelActivity.setDisable(!cancelable);
+            });
+
+        tableScheduledActivities.setRowFactory(tv -> {
+            TableRow<ScheduledActivityDetailDTO> row = new TableRow<>();
+            row.setTooltip(new Tooltip("Double-click to show details"));
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    onShowScheduledActivityDetails(null);
+                }
+            });
+            return row;
+        });
+    }
+
+    private void onLoadScheduledActivities() {
+        if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
+            dialogError("No environment selected");
+            return;
+        }
+        String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+        ScheduledActivityListTask task = new ScheduledActivityListTask(environmentCode);
+        task.setOnSucceeded(event -> {
+            mainProgressBar.setProgress(1.0);
+            tableScheduledActivities.setDisable(false);
+            scheduledActivitiesList.clear();
+            if (task.getValue() != null && task.getValue().getValue() != null) {
+                scheduledActivitiesList.addAll(task.getValue().getValue());
+            }
+            Platform.runLater(() -> txtAreaConsole.appendText(logMsg("Scheduled activities loaded (" + scheduledActivitiesList.size() + ")") + "\n"));
+        });
+        task.setOnFailed(event -> {
+            mainProgressBar.setProgress(0);
+            Platform.runLater(() -> dialogError(task.getException().getMessage()));
+        });
+        txtAreaConsole.appendText(logMsg("Loading scheduled activities...") + "\n");
+        mainProgressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+        AbstractTask.startDaemon(task);
+    }
+
+    public void onRefreshScheduledActivities(ActionEvent actionEvent) {
+        scheduledActivitiesList.clear();
+        onLoadScheduledActivities();
+    }
+
+    public void onShowScheduledActivityDetails(ActionEvent event) {
+        if (tableScheduledActivities.getSelectionModel().getSelectedIndex() == -1) return;
+        ScheduledActivityDetailDTO selected = tableScheduledActivities.getSelectionModel().getSelectedItem();
+        String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+        ScheduledActivityDetailTask task = new ScheduledActivityDetailTask(environmentCode, selected.getCode());
+        ProgressDialog progressDialog = new ProgressDialog(task);
+        progressDialog.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+        progressDialog.setGraphic(null);
+        task.setOnSucceeded(e -> {
+            progressDialog.close();
+            ScheduledActivityDetailDTO d = task.getValue();
+            String details =
+                "Code:                " + d.getCode() + "\n"
+                + "Subscription:        " + d.getSubscriptionCode() + "\n"
+                + "Environment:         " + d.getEnvironmentCode() + "\n"
+                + "Activity Type:       " + d.getActivityType() + "\n"
+                + "Activity Name:       " + d.getActivityName() + "\n"
+                + "Status:              " + d.getStatus() + "\n"
+                + "Scheduled:           " + fmtDt(d.getScheduledTimestamp()) + "\n"
+                + "Started:             " + fmtDt(d.getStartedTimestamp()) + "\n"
+                + "Finished:            " + fmtDt(d.getFinishedTimestamp()) + "\n"
+                + "Created by:          " + d.getCreatedBy() + "\n"
+                + "Created:             " + fmtDt(d.getCreatedTimestamp()) + "\n"
+                + "Last modified by:    " + d.getLastModifiedBy() + "\n"
+                + "Last modified:       " + fmtDt(d.getLastModifiedTimestamp()) + "\n"
+                + "Read-only:           " + d.isReadOnly() + "\n"
+                + "Updatable:           " + d.isUpdatable() + "\n"
+                + "Cancelable:          " + d.isCancelable() + "\n"
+                + "Activity notes:      " + d.getActivityNotes() + "\n"
+                + "Impact notes:        " + d.getActivityImpactNotes();
+            dialogDetails("Scheduled Activity Details", details);
+        });
+        task.setOnFailed(e -> dialogError(task.getException().getMessage()));
+        progressDialog.setOnCloseRequest(e -> task.cancel());
+        AbstractTask.startDaemon(task);
+        progressDialog.showAndWait();
+    }
+
+    @FXML
+    public void onNewActivity(ActionEvent event) {
+        if (comboEnvironments.getSelectionModel().getSelectedIndex() == -1) {
+            dialogError("No environment selected");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("scheduledactivity_create.fxml"));
+            AnchorPane page = loader.load();
+            ScheduledActivityCreateController controller = loader.getController();
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("New Scheduled Activity");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            dialogStage.setScene(new Scene(page));
+            dialogStage.showAndWait();
+
+            CreateScheduledActivityRequestDTO requestDTO = controller.getResult();
+            if (requestDTO == null) return;
+
+            String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+            ScheduledActivityCreateTask createTask = new ScheduledActivityCreateTask(environmentCode, requestDTO);
+            ProgressDialog progressDialog = new ProgressDialog(createTask);
+            progressDialog.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+            progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+            progressDialog.setGraphic(null);
+            createTask.setOnSucceeded(e -> {
+                progressDialog.close();
+                Platform.runLater(() -> {
+                    txtAreaConsole.appendText(logMsg("Scheduled activity created: " + createTask.getValue().getCode()) + "\n");
+                    onLoadScheduledActivities();
+                });
+            });
+            createTask.setOnFailed(e -> dialogError(createTask.getException().getMessage()));
+            progressDialog.setOnCloseRequest(e -> createTask.cancel());
+            AbstractTask.startDaemon(createTask);
+            progressDialog.showAndWait();
+        } catch (Exception ex) {
+            App.LOG.error("Unable to load create dialog - " + ex.getMessage());
+            dialogError("Unable to open create dialog: " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    public void onCancelActivity(ActionEvent event) {
+        if (tableScheduledActivities.getSelectionModel().getSelectedIndex() == -1) return;
+        ScheduledActivityDetailDTO selected = tableScheduledActivities.getSelectionModel().getSelectedItem();
+        if (!Boolean.TRUE.equals(selected.isCancelable())) {
+            dialogError("This activity cannot be cancelled (cancelable = false)");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Cancellation");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Cancel activity \"" + selected.getCode() + "\" (" + selected.getActivityType() + ")?\nThis action cannot be undone.");
+        confirm.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        Optional<ButtonType> choice = confirm.showAndWait();
+        if (!choice.isPresent() || choice.get() != ButtonType.OK) return;
+
+        String environmentCode = ((EnvironmentDetailDTO) comboEnvironments.getSelectionModel().getSelectedItem()).getCode();
+        ScheduledActivityCancelTask cancelTask = new ScheduledActivityCancelTask(environmentCode, selected.getCode());
+        ProgressDialog progressDialog = new ProgressDialog(cancelTask);
+        progressDialog.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+        progressDialog.setGraphic(null);
+        cancelTask.setOnSucceeded(e -> {
+            progressDialog.close();
+            Platform.runLater(() -> {
+                txtAreaConsole.appendText(logMsg("Activity cancelled: " + selected.getCode()) + "\n");
+                onLoadScheduledActivities();
+            });
+        });
+        cancelTask.setOnFailed(e -> dialogError(cancelTask.getException().getMessage()));
+        progressDialog.setOnCloseRequest(e -> cancelTask.cancel());
+        AbstractTask.startDaemon(cancelTask);
+        progressDialog.showAndWait();
     }
 
     /**
@@ -996,6 +1211,7 @@ public class MainController extends AbstractController implements Initializable 
             case "tabExistingBuild": onRefreshBuilds(actionEvent); break;
             case "tabDeployments":   onRefreshDeployments(actionEvent); break;
             case "tabEndpoints":     onRefreshEndpoints(actionEvent); break;
+            case "tabScheduledActivities": onRefreshScheduledActivities(actionEvent); break;
         }
     }
 

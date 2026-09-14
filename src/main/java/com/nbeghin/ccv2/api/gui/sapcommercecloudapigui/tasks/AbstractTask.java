@@ -9,6 +9,7 @@ import com.sap.cx.commercecloud.management.openapi.api.BuildApi;
 import com.sap.cx.commercecloud.management.openapi.api.DeploymentApi;
 import com.sap.cx.commercecloud.management.openapi.api.EndpointApi;
 import com.sap.cx.commercecloud.management.openapi.api.EnvironmentApi;
+import com.sap.cx.commercecloud.management.openapi.api.ScheduledActivityApi;
 import com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.utils.OAuthTokenFetcher;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -34,6 +35,7 @@ public abstract class AbstractTask<T> extends Task<T> {
     private final DeploymentApi deploymentApi;
 
     private final EndpointApi endpointApi;
+    private final ScheduledActivityApi scheduledActivityApi;
 
     public AbstractTask() {
         this.apiClient = new ApiClient();
@@ -59,6 +61,7 @@ public abstract class AbstractTask<T> extends Task<T> {
         environmentApi = this.apiClient.createService(EnvironmentApi.class);
         deploymentApi = this.apiClient.createService(DeploymentApi.class);
         endpointApi = this.apiClient.createService(EndpointApi.class);
+        scheduledActivityApi = this.apiClient.createService(ScheduledActivityApi.class);
     }
 
     private volatile String token;
@@ -93,6 +96,10 @@ public abstract class AbstractTask<T> extends Task<T> {
 
     protected EndpointApi getEndpointApi() {
         return endpointApi;
+    }
+
+    protected ScheduledActivityApi getScheduledActivityApi() {
+        return scheduledActivityApi;
     }
 
     @Override

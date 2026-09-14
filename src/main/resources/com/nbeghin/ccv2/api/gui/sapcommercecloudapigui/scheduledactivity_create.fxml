@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.2-ea"
+            fx:controller="com.nbeghin.ccv2.api.gui.sapcommercecloudapigui.ScheduledActivityCreateController"
+            prefWidth="400.0" prefHeight="190.0">
+    <VBox spacing="10"
+          AnchorPane.topAnchor="15" AnchorPane.leftAnchor="15"
+          AnchorPane.rightAnchor="15" AnchorPane.bottomAnchor="15">
+        <Label text="Activity Type:"/>
+        <ComboBox fx:id="comboActivityType" maxWidth="Infinity"/>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <DatePicker fx:id="datePicker" promptText="Date" prefWidth="130"/>
+            <Spinner fx:id="spinnerHour" prefWidth="62"/>
+            <Label text=":"/>
+            <Spinner fx:id="spinnerMinute" prefWidth="62"/>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding><Insets top="10"/></padding>
+            <Button fx:id="btnCreate" text="Create" onAction="#onCreate" defaultButton="true"/>
+            <Button fx:id="btnCancel" text="Cancel" onAction="#onCancel"/>
+        </HBox>
+    </VBox>
+</AnchorPane>
