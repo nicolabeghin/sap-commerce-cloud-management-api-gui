@@ -61,6 +61,8 @@ this is where `sap-commerce-cloud-management-api-gui` comes into play.
 * **New Activity**: schedule a new activity by selecting the activity type (`HIBERNATE_COMMERCE_ENVIRONMENT`, `WAKE_UP_COMMERCE_ENVIRONMENT`) and a date/time
 * **Cancel Activity**: cancel a selected activity (enabled only for activities that are not already cancelled or cancelling)
 
+<img width="620" height="528" alt="image" src="https://github.com/user-attachments/assets/e8a25a80-b1dd-44af-80c7-0c270f92467e" />
+
 
 ## Credentials
 At first start you'll be prompted for
